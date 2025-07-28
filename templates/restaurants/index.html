@@ -1,0 +1,54 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}トップページ - NAGOYAMESHI{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-primary text-white py-5">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="fas fa-utensils me-3"></i>NAGOYAMESHI
+        </h1>
+        <p class="lead mb-4">名古屋の美味しいレストランを見つけよう</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    {% if restaurants %}
+        <div class="row">
+            {% for restaurant in restaurants %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        {% if restaurant.image %}
+                            <img src="{{ restaurant.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fas fa-image fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ restaurant.name }}</h5>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-tag me-1"></i>{{ restaurant.category.name }}
+                            </p>
+                            <p class="card-text text-truncate">{{ restaurant.description }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ restaurant.opening_time }} - {{ restaurant.closing_time }}
+                                </small>
+                                <a href="#" class="btn btn-primary btn-sm">詳細を見る</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-utensils fa-4x text-muted mb-3"></i>
+            <h3 class="text-muted">店舗が登録されていません</h3>
+            <p class="text-muted">管理画面から店舗を追加してください。</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
