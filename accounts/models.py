@@ -1,36 +1,23 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
 class CustomUser(AbstractUser):
-    """カスタムユーザーモデル"""
+    username = None
+    email = models.EmailField(unique=True)
+    is_premium = models.BooleanField(default=False)
     
-    # メールアドレスでログイン
-    email = models.EmailField('メールアドレス', unique=True)
+    # 追加のプロフィールフィールド
+    postal_code = models.CharField(max_length=8, blank=True, null=True, verbose_name='郵便番号')
+    address = models.TextField(blank=True, null=True, verbose_name='住所')
+    phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name='電話番号')
     
-    # 基本情報
-    first_name = models.CharField('名', max_length=30)
-    last_name = models.CharField('姓', max_length=30)
-    phone_number = models.CharField('電話番号', max_length=15, blank=True)
-    
-    # 有料会員関連
-    is_premium = models.BooleanField('有料会員フラグ', default=False)
-    stripe_customer_id = models.CharField('Stripe顧客ID', max_length=100, blank=True)
-    
-    # タイムスタンプ
-    created_at = models.DateTimeField('作成日時', auto_now_add=True)
-    updated_at = models.DateTimeField('更新日時', auto_now=True)
-    
-    # メールアドレスをユーザー名として使用
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = []
     
     class Meta:
-        verbose_name = '会員'
-        verbose_name_plural = '会員'
+        verbose_name = 'ユーザー'
+        verbose_name_plural = 'ユーザー'
     
     def __str__(self):
-        return f"{self.last_name} {self.first_name}"
-    
-    def get_full_name(self):
-        """フルネームを返す"""
-        return f"{self.last_name} {self.first_name}"
+        return self.email

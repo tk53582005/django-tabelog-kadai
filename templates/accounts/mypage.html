@@ -1,0 +1,205 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}マイページ - NAGOYAMESHI{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- パンくずナビ -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">マイページ</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- サイドバー -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-user"></i> メニュー</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'accounts:mypage' %}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-home"></i> マイページ
+                    </a>
+                    <a href="{% url 'accounts:profile_edit' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-edit"></i> プロフィール編集
+                    </a>
+                    <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-key"></i> パスワード変更
+                    </a>
+                    {% if not user.is_premium %}
+                    <a href="#" class="list-group-item list-group-item-action text-warning">
+                        <i class="fas fa-crown"></i> 有料会員になる
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="col-lg-9">
+            <!-- 会員情報カード -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-user-circle"></i> 会員情報</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold">お名前</td>
+                                    <td>
+                                        {% if user.last_name or user.first_name %}
+                                            {{ user.last_name }} {{ user.first_name }}
+                                        {% else %}
+                                            <span class="text-muted">未設定</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">メールアドレス</td>
+                                    <td>{{ user.email }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">会員種別</td>
+                                    <td>
+                                        {% if user.is_premium %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-crown"></i> 有料会員
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">無料会員</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold">郵便番号</td>
+                                    <td>{{ user.postal_code|default:"<span class='text-muted'>未設定</span>" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">住所</td>
+                                    <td>{{ user.address|default:"<span class='text-muted'>未設定</span>" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">電話番号</td>
+                                    <td>{{ user.phone_number|default:"<span class='text-muted'>未設定</span>" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> プロフィールを編集
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 有料会員のみの機能 -->
+            {% if user.is_premium %}
+            <div class="row">
+                <!-- お気に入り店舗 -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="card-title mb-0"><i class="fas fa-heart text-danger"></i> お気に入り店舗</h6>
+                            <a href="{% url 'restaurants:favorite_list' %}" class="btn btn-sm btn-outline-primary">すべて見る</a>
+                        </div>
+                        <div class="card-body">
+                            {% if favorite_restaurants %}
+                                {% for favorite in favorite_restaurants %}
+                                <div class="d-flex align-items-center mb-3 {% if not forloop.last %}border-bottom pb-2{% endif %}">
+                                    <div class="me-3">
+                                        {% if favorite.restaurant.image %}
+                                        <img src="{{ favorite.restaurant.image.url }}" class="rounded" width="60" height="60" style="object-fit: cover;">
+                                        {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ favorite.restaurant.name }}</h6>
+                                        <small class="text-muted">{{ favorite.restaurant.category.name }}</small>
+                                    </div>
+                                    <div>
+                                        <a href="{% url 'restaurants:detail' favorite.restaurant.pk %}" class="btn btn-sm btn-outline-primary">詳細</a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center text-muted py-3">
+                                    <i class="fas fa-heart fa-2x mb-2"></i>
+                                    <p class="mb-0">まだお気に入りがありません</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最近のレビュー -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="card-title mb-0"><i class="fas fa-comments text-primary"></i> 最近のレビュー</h6>
+                            <a href="#" class="btn btn-sm btn-outline-primary">すべて見る</a>
+                        </div>
+                        <div class="card-body">
+                            <!-- 後でレビュー機能実装時に追加 -->
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-comment-slash fa-2x mb-2"></i>
+                                <p class="mb-0">まだレビューがありません</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 予約履歴 -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="card-title mb-0"><i class="fas fa-calendar-check text-success"></i> 予約履歴</h6>
+                    <a href="#" class="btn btn-sm btn-outline-primary">すべて見る</a>
+                </div>
+                <div class="card-body">
+                    <!-- 後で予約機能実装時に追加 -->
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                        <p class="mb-0">まだ予約がありません</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- 無料会員向けの有料会員案内 -->
+            <div class="card border-warning mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="card-title mb-0"><i class="fas fa-crown"></i> 有料会員になりませんか？</h6>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">有料会員になると以下の機能が利用できます：</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> 店舗の予約機能</li>
+                        <li><i class="fas fa-check text-success"></i> レビューの投稿</li>
+                        <li><i class="fas fa-check text-success"></i> お気に入り店舗の保存</li>
+                        <li><i class="fas fa-check text-success"></i> 特別なクーポンの利用</li>
+                    </ul>
+                    <div class="text-center">
+                        <a href="#" class="btn btn-warning btn-lg">
+                            <i class="fas fa-crown"></i> 有料会員になる（月額300円）
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
