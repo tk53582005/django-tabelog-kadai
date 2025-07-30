@@ -1,22 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.db.models import Q, Avg, Count
+from django.db.models import Q, Avg
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.urls import reverse_lazy, reverse
-from django.core.exceptions import ValidationError
-from django.db import transaction, IntegrityError
-from django.http import Http404
-import logging
 from datetime import datetime, timedelta
 from .models import Restaurant, Category, Review, Favorite, Reservation
 from .forms import ReviewForm, ReservationForm
-
-# ログ設定
-logger = logging.getLogger(__name__)
 
 
 class IndexView(ListView):
@@ -26,41 +19,29 @@ class IndexView(ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        try:
-            queryset = Restaurant.objects.all()
+        queryset = Restaurant.objects.all()
+        
+        # 検索機能
+        keyword = self.request.GET.get('keyword', '')
+        category_id = self.request.GET.get('category', '')
+        
+        if keyword:
+            queryset = queryset.filter(
+                Q(name__icontains=keyword) | 
+                Q(description__icontains=keyword)
+            )
+        
+        if category_id and category_id.isdigit():
+            queryset = queryset.filter(category_id=int(category_id))
             
-            # 検索機能
-            keyword = self.request.GET.get('keyword', '').strip()
-            category_id = self.request.GET.get('category', '').strip()
-            
-            if keyword:
-                queryset = queryset.filter(
-                    Q(name__icontains=keyword) | 
-                    Q(description__icontains=keyword) |
-                    Q(address__icontains=keyword) |
-                    Q(category__name__icontains=keyword)  # カテゴリ名でも検索可能に
-                )
-            
-            if category_id and category_id.isdigit():
-                queryset = queryset.filter(category_id=int(category_id))
-                
-            return queryset.order_by('-created_at')
-        except Exception as e:
-            logger.error(f"IndexView get_queryset error: {e}")
-            messages.error(self.request, 'データの取得中にエラーが発生しました。')
-            return Restaurant.objects.none()
+        return queryset.order_by('-created_at')
     
     def get_context_data(self, **kwargs):
-        try:
-            context = super().get_context_data(**kwargs)
-            context['categories'] = Category.objects.all()
-            context['keyword'] = self.request.GET.get('keyword', '')
-            context['selected_category'] = self.request.GET.get('category', '')
-            return context
-        except Exception as e:
-            logger.error(f"IndexView get_context_data error: {e}")
-            messages.error(self.request, 'ページの表示中にエラーが発生しました。')
-            return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+        context['keyword'] = self.request.GET.get('keyword', '')
+        context['selected_category'] = self.request.GET.get('category', '')
+        return context
 
 
 class RestaurantDetailView(DetailView):
@@ -68,84 +49,55 @@ class RestaurantDetailView(DetailView):
     template_name = 'restaurants/detail.html'
     context_object_name = 'restaurant'
     
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            return super().dispatch(request, *args, **kwargs)
-        except Http404:
-            messages.error(request, '指定されたレストランが見つかりません。')
-            return redirect('restaurants:index')
-        except Exception as e:
-            logger.error(f"RestaurantDetailView dispatch error: {e}")
-            messages.error(request, 'レストラン詳細の取得中にエラーが発生しました。')
-            return redirect('restaurants:index')
-    
     def get_context_data(self, **kwargs):
-        try:
-            context = super().get_context_data(**kwargs)
-            restaurant = self.get_object()
+        context = super().get_context_data(**kwargs)
+        restaurant = self.get_object()
+        
+        # レビュー情報を取得
+        reviews = Review.objects.filter(restaurant=restaurant).order_by('-created_at')
+        context['reviews'] = reviews
+        
+        # 平均評価を計算
+        avg_score = reviews.aggregate(Avg('rating'))['rating__avg']
+        context['avg_score'] = round(avg_score, 1) if avg_score else 0
+        context['review_count'] = reviews.count()
+        
+        # ユーザーがログインしている場合
+        if self.request.user.is_authenticated:
+            context['is_favorite'] = Favorite.objects.filter(
+                user=self.request.user, 
+                restaurant=restaurant
+            ).exists()
             
-            # レビュー情報を取得
-            reviews = Review.objects.filter(restaurant=restaurant, is_approved=True).order_by('-created_at')
-            context['reviews'] = reviews
+            context['user_review'] = reviews.filter(user=self.request.user).first()
             
-            # 平均評価を計算
-            avg_score = reviews.aggregate(Avg('rating'))['rating__avg']
-            context['avg_score'] = round(avg_score, 1) if avg_score else 0
-            context['review_count'] = reviews.count()
-            
-            # ユーザーがログインしている場合の処理
-            if self.request.user.is_authenticated:
-                try:
-                    context['is_favorite'] = Favorite.objects.filter(
-                        user=self.request.user, 
-                        restaurant=restaurant
-                    ).exists()
-                    
-                    # ユーザーが既にレビューを投稿しているかチェック
-                    context['user_review'] = reviews.filter(user=self.request.user).first()
-                    
-                    # 有料会員の場合の機能を提供
-                    if hasattr(self.request.user, 'is_premium') and self.request.user.is_premium:
-                        # 未レビューの場合、レビューフォームを提供
-                        if not context['user_review']:
-                            context['review_form'] = ReviewForm()
-                        
-                        # 予約フォームを提供
-                        context['reservation_form'] = ReservationForm()
-                except Exception as e:
-                    logger.error(f"User context data error: {e}")
-                    # ユーザー関連のエラーでもページは表示する
-                    pass
-            
-            return context
-        except Exception as e:
-            logger.error(f"RestaurantDetailView get_context_data error: {e}")
-            messages.error(self.request, 'レストラン情報の取得中にエラーが発生しました。')
-            return super().get_context_data(**kwargs)
+            # プレミアム会員の場合
+            if hasattr(self.request.user, 'is_premium') and self.request.user.is_premium:
+                if not context['user_review']:
+                    context['review_form'] = ReviewForm()
+                context['reservation_form'] = ReservationForm()
+        
+        return context
 
 
 @require_POST
 @login_required
 def toggle_favorite(request, restaurant_id):
-    """お気に入りの追加・削除をAjaxで処理"""
     try:
         restaurant = get_object_or_404(Restaurant, id=restaurant_id)
         
-        with transaction.atomic():
-            favorite, created = Favorite.objects.get_or_create(
-                user=request.user,
-                restaurant=restaurant
-            )
-            
-            if not created:
-                # 既に存在する場合は削除
-                favorite.delete()
-                is_favorite = False
-                message = 'お気に入りから削除しました'
-            else:
-                # 新規作成の場合
-                is_favorite = True
-                message = 'お気に入りに追加しました'
+        favorite, created = Favorite.objects.get_or_create(
+            user=request.user,
+            restaurant=restaurant
+        )
+        
+        if not created:
+            favorite.delete()
+            is_favorite = False
+            message = 'お気に入りから削除しました'
+        else:
+            is_favorite = True
+            message = 'お気に入りに追加しました'
         
         return JsonResponse({
             'success': True,
@@ -153,316 +105,157 @@ def toggle_favorite(request, restaurant_id):
             'message': message
         })
     
-    except Restaurant.DoesNotExist:
-        logger.error(f"Restaurant not found: {restaurant_id}")
+    except:
         return JsonResponse({
             'success': False,
-            'message': '指定されたレストランが見つかりません。'
-        }, status=404)
-    
-    except Exception as e:
-        logger.error(f"toggle_favorite error: {e}")
-        return JsonResponse({
-            'success': False,
-            'message': 'お気に入りの更新中にエラーが発生しました。'
+            'message': 'エラーが発生しました。'
         }, status=500)
 
 
 class FavoriteListView(LoginRequiredMixin, ListView):
-    """お気に入り一覧ページ"""
     model = Favorite
     template_name = 'restaurants/favorite_list.html'
     context_object_name = 'favorites'
     paginate_by = 12
     
     def get_queryset(self):
-        try:
-            return Favorite.objects.filter(user=self.request.user).select_related('restaurant').order_by('-created_at')
-        except Exception as e:
-            logger.error(f"FavoriteListView get_queryset error: {e}")
-            messages.error(self.request, 'お気に入り一覧の取得中にエラーが発生しました。')
-            return Favorite.objects.none()
+        return Favorite.objects.filter(user=self.request.user).order_by('-created_at')
 
 
 class ReviewCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-    """レビュー投稿"""
     model = Review
     form_class = ReviewForm
     template_name = 'restaurants/review_create.html'
     
     def test_func(self):
-        # 有料会員のみアクセス可能
+        # プレミアム会員のみ
         return hasattr(self.request.user, 'is_premium') and self.request.user.is_premium
     
     def handle_no_permission(self):
-        messages.error(self.request, 'レビュー投稿は有料会員限定の機能です。')
+        messages.error(self.request, 'レビュー投稿はプレミアム会員限定です。')
         return redirect('restaurants:index')
     
     def get_context_data(self, **kwargs):
-        try:
-            context = super().get_context_data(**kwargs)
-            context['restaurant'] = get_object_or_404(Restaurant, pk=self.kwargs['restaurant_id'])
-            return context
-        except Http404:
-            messages.error(self.request, '指定されたレストランが見つかりません。')
-            return redirect('restaurants:index')
-        except Exception as e:
-            logger.error(f"ReviewCreateView get_context_data error: {e}")
-            messages.error(self.request, 'ページの表示中にエラーが発生しました。')
-            return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        context['restaurant'] = get_object_or_404(Restaurant, pk=self.kwargs['restaurant_id'])
+        return context
     
     def form_valid(self, form):
-        try:
-            restaurant = get_object_or_404(Restaurant, pk=self.kwargs['restaurant_id'])
-            
-            # 既にレビューが存在するかチェック
-            if Review.objects.filter(user=self.request.user, restaurant=restaurant).exists():
-                messages.error(self.request, '既にこちらの店舗にレビューを投稿済みです。')
-                return redirect('restaurants:detail', pk=restaurant.pk)
-            
-            with transaction.atomic():
-                form.instance.user = self.request.user
-                form.instance.restaurant = restaurant
-                response = super().form_valid(form)
-                messages.success(self.request, 'レビューを投稿しました。')
-                return response
-                
-        except IntegrityError as e:
-            logger.error(f"ReviewCreateView IntegrityError: {e}")
+        restaurant = get_object_or_404(Restaurant, pk=self.kwargs['restaurant_id'])
+        
+        # 既にレビューがあるかチェック
+        if Review.objects.filter(user=self.request.user, restaurant=restaurant).exists():
             messages.error(self.request, '既にレビューを投稿済みです。')
-            return self.form_invalid(form)
-        except Exception as e:
-            logger.error(f"ReviewCreateView form_valid error: {e}")
-            messages.error(self.request, 'レビューの投稿中にエラーが発生しました。')
-            return self.form_invalid(form)
+            return redirect('restaurants:detail', pk=restaurant.pk)
+        
+        form.instance.user = self.request.user
+        form.instance.restaurant = restaurant
+        messages.success(self.request, 'レビューを投稿しました。')
+        return super().form_valid(form)
     
     def get_success_url(self):
         return reverse('restaurants:detail', kwargs={'pk': self.kwargs['restaurant_id']})
 
 
 class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """レビュー編集 - Phase 5-3強化版"""
     model = Review
     form_class = ReviewForm
     template_name = 'restaurants/review_edit.html'
     
     def test_func(self):
-        try:
-            review = self.get_object()
-            return self.request.user == review.user
-        except Exception as e:
-            logger.error(f"ReviewUpdateView test_func error: {e}")
-            return False
+        review = self.get_object()
+        return self.request.user == review.user
     
     def handle_no_permission(self):
         messages.error(self.request, 'このレビューを編集する権限がありません。')
         return redirect('restaurants:index')
     
     def form_valid(self, form):
-        try:
-            with transaction.atomic():
-                response = super().form_valid(form)
-                messages.success(self.request, 'レビューを更新しました。')
-                return response
-        except Exception as e:
-            logger.error(f"ReviewUpdateView form_valid error: {e}")
-            messages.error(self.request, 'レビューの更新中にエラーが発生しました。')
-            return self.form_invalid(form)
-    
-    def form_invalid(self, form):
-        messages.error(self.request, 'レビューの更新に失敗しました。入力内容を確認してください。')
-        return super().form_invalid(form)
+        messages.success(self.request, 'レビューを更新しました。')
+        return super().form_valid(form)
     
     def get_success_url(self):
-        # Phase 5-3: レビュー一覧に戻るオプションを追加
-        return_to = self.request.GET.get('return_to')
-        if return_to == 'list':
-            return reverse('restaurants:review_list')
         return reverse('restaurants:detail', kwargs={'pk': self.object.restaurant.pk})
 
 
 class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """レビュー削除 - Phase 5-3強化版"""
     model = Review
     template_name = 'restaurants/review_delete.html'
     
     def test_func(self):
-        try:
-            review = self.get_object()
-            return self.request.user == review.user
-        except Exception as e:
-            logger.error(f"ReviewDeleteView test_func error: {e}")
-            return False
+        review = self.get_object()
+        return self.request.user == review.user
     
     def handle_no_permission(self):
         messages.error(self.request, 'このレビューを削除する権限がありません。')
         return redirect('restaurants:index')
     
     def delete(self, request, *args, **kwargs):
-        try:
-            with transaction.atomic():
-                response = super().delete(request, *args, **kwargs)
-                messages.success(self.request, 'レビューを削除しました。')
-                return response
-        except Exception as e:
-            logger.error(f"ReviewDeleteView delete error: {e}")
-            messages.error(self.request, 'レビューの削除中にエラーが発生しました。')
-            return redirect('restaurants:review_list')
+        messages.success(self.request, 'レビューを削除しました。')
+        return super().delete(request, *args, **kwargs)
     
     def get_success_url(self):
-        # Phase 5-3: レビュー一覧に戻るオプションを追加
-        return_to = self.request.GET.get('return_to')
-        if return_to == 'list':
-            return reverse('restaurants:review_list')
         return reverse('restaurants:detail', kwargs={'pk': self.object.restaurant.pk})
 
 
 class ReviewListView(LoginRequiredMixin, ListView):
-    """レビュー一覧（ユーザー別）- Phase 5-3強化版"""
     model = Review
     template_name = 'restaurants/review_list.html'
     context_object_name = 'reviews'
     paginate_by = 10
     
     def get_queryset(self):
-        try:
-            queryset = Review.objects.filter(user=self.request.user).select_related('restaurant').order_by('-created_at')
-            
-            # フィルタリング機能
-            rating_filter = self.request.GET.get('rating', '').strip()
-            if rating_filter and rating_filter.isdigit() and 1 <= int(rating_filter) <= 5:
-                queryset = queryset.filter(rating=int(rating_filter))
-            
-            restaurant_filter = self.request.GET.get('restaurant', '').strip()
-            if restaurant_filter:
-                queryset = queryset.filter(restaurant__name__icontains=restaurant_filter)
-            
-            # ソート機能
-            sort_filter = self.request.GET.get('sort', '-created_at')
-            allowed_sorts = ['-created_at', 'created_at', '-rating', 'rating']
-            if sort_filter in allowed_sorts:
-                queryset = queryset.order_by(sort_filter)
-            
-            return queryset
-        except Exception as e:
-            logger.error(f"ReviewListView get_queryset error: {e}")
-            messages.error(self.request, 'レビュー一覧の取得中にエラーが発生しました。')
-            return Review.objects.none()
-    
-    def get_context_data(self, **kwargs):
-        try:
-            context = super().get_context_data(**kwargs)
-            
-            # ユーザーのレビュー統計を取得
-            user_reviews = Review.objects.filter(user=self.request.user)
-            
-            # 統計データを計算
-            total_reviews = user_reviews.count()
-            average_rating = user_reviews.aggregate(Avg('rating'))['rating__avg'] or 0
-            reviewed_restaurants = user_reviews.values('restaurant').distinct().count()
-            latest_review = user_reviews.order_by('-created_at').first()
-            
-            context.update({
-                'total_reviews': total_reviews,
-                'average_rating': round(average_rating, 1) if average_rating else 0,
-                'reviewed_restaurants': reviewed_restaurants,
-                'latest_review_date': latest_review.created_at if latest_review else None,
-            })
-            
-            return context
-        except Exception as e:
-            logger.error(f"ReviewListView get_context_data error: {e}")
-            messages.error(self.request, '統計情報の取得中にエラーが発生しました。')
-            return super().get_context_data(**kwargs)
+        return Review.objects.filter(user=self.request.user).order_by('-created_at')
 
 
 class ReservationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-    """予約作成"""
     model = Reservation
     form_class = ReservationForm
     template_name = 'restaurants/reservation_create.html'
     
     def test_func(self):
-        # 有料会員のみアクセス可能
+        # プレミアム会員のみ
         return hasattr(self.request.user, 'is_premium') and self.request.user.is_premium
     
     def handle_no_permission(self):
-        messages.error(self.request, '予約機能は有料会員限定です。')
+        messages.error(self.request, '予約機能はプレミアム会員限定です。')
         return redirect('restaurants:index')
     
     def get_context_data(self, **kwargs):
-        try:
-            context = super().get_context_data(**kwargs)
-            context['restaurant'] = get_object_or_404(Restaurant, pk=self.kwargs['restaurant_id'])
-            return context
-        except Http404:
-            messages.error(self.request, '指定されたレストランが見つかりません。')
-            return redirect('restaurants:index')
-        except Exception as e:
-            logger.error(f"ReservationCreateView get_context_data error: {e}")
-            messages.error(self.request, 'ページの表示中にエラーが発生しました。')
-            return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        context['restaurant'] = get_object_or_404(Restaurant, pk=self.kwargs['restaurant_id'])
+        return context
     
     def form_valid(self, form):
-        try:
-            restaurant = get_object_or_404(Restaurant, pk=self.kwargs['restaurant_id'])
-            
-            # 予約日時の妥当性チェック
-            reservation_datetime = datetime.combine(
-                form.cleaned_data['reservation_date'],
-                form.cleaned_data['reservation_time']
-            )
-            
-            if reservation_datetime <= datetime.now():
-                messages.error(self.request, '過去の日時には予約できません。')
-                return self.form_invalid(form)
-            
-            # 同じ日時に既に予約があるかチェック
-            existing_reservation = Reservation.objects.filter(
-                user=self.request.user,
-                restaurant=restaurant,
-                reservation_date=form.cleaned_data['reservation_date'],
-                reservation_time=form.cleaned_data['reservation_time'],
-                status='confirmed'
-            )
-            
-            if existing_reservation.exists():
-                messages.error(self.request, '同じ日時に既に予約があります。')
-                return self.form_invalid(form)
-            
-            with transaction.atomic():
-                form.instance.user = self.request.user
-                form.instance.restaurant = restaurant
-                response = super().form_valid(form)
-                messages.success(self.request, '予約を承りました。')
-                return response
-                
-        except ValidationError as e:
-            logger.error(f"ReservationCreateView ValidationError: {e}")
-            messages.error(self.request, '入力内容に不備があります。')
+        restaurant = get_object_or_404(Restaurant, pk=self.kwargs['restaurant_id'])
+        
+        # 予約日時の妥当性チェック
+        reservation_datetime = datetime.combine(
+            form.cleaned_data['reservation_date'],
+            form.cleaned_data['reservation_time']
+        )
+        
+        if reservation_datetime <= datetime.now():
+            messages.error(self.request, '過去の日時には予約できません。')
             return self.form_invalid(form)
-        except Exception as e:
-            logger.error(f"ReservationCreateView form_valid error: {e}")
-            messages.error(self.request, '予約の作成中にエラーが発生しました。')
-            return self.form_invalid(form)
+        
+        form.instance.user = self.request.user
+        form.instance.restaurant = restaurant
+        messages.success(self.request, '予約を承りました。')
+        return super().form_valid(form)
     
     def get_success_url(self):
         return reverse('restaurants:reservation_detail', kwargs={'pk': self.object.pk})
 
 
 class ReservationDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
-    """予約詳細"""
     model = Reservation
     template_name = 'restaurants/reservation_detail.html'
     context_object_name = 'reservation'
     
     def test_func(self):
-        try:
-            reservation = self.get_object()
-            return self.request.user == reservation.user
-        except Exception as e:
-            logger.error(f"ReservationDetailView test_func error: {e}")
-            return False
+        reservation = self.get_object()
+        return self.request.user == reservation.user
     
     def handle_no_permission(self):
         messages.error(self.request, 'この予約を表示する権限がありません。')
@@ -470,61 +263,43 @@ class ReservationDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView)
 
 
 class ReservationListView(LoginRequiredMixin, ListView):
-    """予約一覧（ユーザー別）"""
     model = Reservation
     template_name = 'restaurants/reservation_list.html'
     context_object_name = 'reservations'
     paginate_by = 10
     
     def get_queryset(self):
-        try:
-            return Reservation.objects.filter(user=self.request.user).select_related('restaurant').order_by('-reservation_date', '-reservation_time')
-        except Exception as e:
-            logger.error(f"ReservationListView get_queryset error: {e}")
-            messages.error(self.request, '予約一覧の取得中にエラーが発生しました。')
-            return Reservation.objects.none()
+        return Reservation.objects.filter(user=self.request.user).order_by('-reservation_date', '-reservation_time')
 
 
 class ReservationCancelView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """予約キャンセル"""
     model = Reservation
     template_name = 'restaurants/reservation_cancel.html'
     fields = []
     
     def test_func(self):
-        try:
-            reservation = self.get_object()
-            return (self.request.user == reservation.user and 
-                    reservation.status == 'confirmed')
-        except Exception as e:
-            logger.error(f"ReservationCancelView test_func error: {e}")
-            return False
+        reservation = self.get_object()
+        return (self.request.user == reservation.user and 
+                reservation.status == 'confirmed')
     
     def handle_no_permission(self):
         messages.error(self.request, 'この予約をキャンセルする権限がありません。')
         return redirect('restaurants:reservation_list')
     
     def form_valid(self, form):
-        try:
-            # キャンセル期限のチェック（例：予約日の24時間前まで）
-            reservation_datetime = datetime.combine(
-                self.object.reservation_date,
-                self.object.reservation_time
-            )
-            
-            if reservation_datetime <= datetime.now() + timedelta(hours=24):
-                messages.error(self.request, '予約日の24時間前を過ぎているため、キャンセルできません。')
-                return redirect('restaurants:reservation_detail', pk=self.object.pk)
-            
-            with transaction.atomic():
-                form.instance.status = 'cancelled'
-                response = super().form_valid(form)
-                messages.success(self.request, '予約をキャンセルしました。')
-                return response
-        except Exception as e:
-            logger.error(f"ReservationCancelView form_valid error: {e}")
-            messages.error(self.request, '予約のキャンセル中にエラーが発生しました。')
+        # キャンセル期限のチェック（予約日の24時間前まで）
+        reservation_datetime = datetime.combine(
+            self.object.reservation_date,
+            self.object.reservation_time
+        )
+        
+        if reservation_datetime <= datetime.now() + timedelta(hours=24):
+            messages.error(self.request, '予約日の24時間前を過ぎているため、キャンセルできません。')
             return redirect('restaurants:reservation_detail', pk=self.object.pk)
+        
+        form.instance.status = 'cancelled'
+        messages.success(self.request, '予約をキャンセルしました。')
+        return super().form_valid(form)
     
     def get_success_url(self):
         return reverse('restaurants:reservation_list')

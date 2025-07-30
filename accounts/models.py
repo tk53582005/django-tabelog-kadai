@@ -1,162 +1,113 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
-from datetime import timedelta
+
 
 class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
     is_premium = models.BooleanField(default=False)
     
-    # 追加のプロフィールフィールド
+    # プロフィール情報
     postal_code = models.CharField(max_length=8, blank=True, null=True, verbose_name='郵便番号')
     address = models.TextField(blank=True, null=True, verbose_name='住所')
     phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name='電話番号')
     
-    # Stripe関連フィールド
-    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='Stripe顧客ID')
-    stripe_subscription_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='StripeサブスクリプションID')
+    # Stripe関連
+    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
+    stripe_subscription_id = models.CharField(max_length=255, blank=True, null=True)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     
-    class Meta:
-        verbose_name = 'ユーザー'
-        verbose_name_plural = 'ユーザー'
-    
     def __str__(self):
         return self.email
     
-    @property
-    def has_active_subscription(self):
-        """アクティブなサブスクリプションがあるかチェック"""
-        return Subscription.objects.filter(
-            user=self,
-            status='active',
-            current_period_end__gt=timezone.now()
-        ).exists()
-    
     def get_subscription(self):
-        """現在のサブスクリプションを取得"""
-        return Subscription.objects.filter(
-            user=self,
-            status='active'
-        ).first()
+        # 現在のサブスクリプションを取得
+        return Subscription.objects.filter(user=self, status='active').first()
 
 
 class Subscription(models.Model):
-    """サブスクリプション管理モデル"""
-    
     STATUS_CHOICES = [
         ('active', 'アクティブ'),
         ('canceled', 'キャンセル済み'),
         ('past_due', '支払い遅延'),
         ('unpaid', '未払い'),
-        ('trialing', 'トライアル中'),
     ]
     
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='ユーザー')
-    stripe_subscription_id = models.CharField(max_length=255, unique=True, verbose_name='StripeサブスクリプションID')
-    stripe_customer_id = models.CharField(max_length=255, verbose_name='Stripe顧客ID')
-    stripe_price_id = models.CharField(max_length=255, verbose_name='Stripe価格ID')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    stripe_subscription_id = models.CharField(max_length=255, unique=True)
+    stripe_customer_id = models.CharField(max_length=255)
+    stripe_price_id = models.CharField(max_length=255)
     
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='ステータス')
-    current_period_start = models.DateTimeField(verbose_name='現在の期間開始日')
-    current_period_end = models.DateTimeField(verbose_name='現在の期間終了日')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    current_period_start = models.DateTimeField()
+    current_period_end = models.DateTimeField()
     
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='作成日時')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新日時')
-    
-    class Meta:
-        verbose_name = 'サブスクリプション'
-        verbose_name_plural = 'サブスクリプション'
-        ordering = ['-created_at']
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"{self.user.email} - {self.get_status_display()}"
-    
-    @property
-    def is_active(self):
-        """サブスクリプションがアクティブかチェック"""
-        return (
-            self.status == 'active' and 
-            self.current_period_end > timezone.now()
-        )
+        return f"{self.user.email} - {self.status}"
     
     @property
     def days_until_renewal(self):
-        """更新まであと何日か"""
+        # 更新まであと何日か
         if self.current_period_end > timezone.now():
             return (self.current_period_end - timezone.now()).days
         return 0
     
     def save(self, *args, **kwargs):
-        """保存時にユーザーのis_premiumフィールドを更新"""
         super().save(*args, **kwargs)
         
         # ユーザーのプレミアム状態を更新
-        self.user.is_premium = self.is_active
+        if self.status == 'active' and self.current_period_end > timezone.now():
+            self.user.is_premium = True
+        else:
+            self.user.is_premium = False
+        
         self.user.stripe_customer_id = self.stripe_customer_id
         self.user.stripe_subscription_id = self.stripe_subscription_id
         self.user.save()
 
 
 class PaymentHistory(models.Model):
-    """決済履歴モデル"""
-    
     STATUS_CHOICES = [
         ('succeeded', '成功'),
         ('pending', '処理中'),
         ('failed', '失敗'),
         ('canceled', 'キャンセル'),
-        ('refunded', '返金済み'),
     ]
     
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='ユーザー')
-    subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='サブスクリプション')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True, blank=True)
     
-    stripe_payment_intent_id = models.CharField(max_length=255, unique=True, verbose_name='Stripe決済ID')
-    stripe_invoice_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='Stripe請求書ID')
+    stripe_payment_intent_id = models.CharField(max_length=255, unique=True)
+    stripe_invoice_id = models.CharField(max_length=255, blank=True, null=True)
     
-    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='金額')
-    currency = models.CharField(max_length=3, default='jpy', verbose_name='通貨')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='ステータス')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3, default='jpy')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     
-    description = models.TextField(blank=True, null=True, verbose_name='説明')
-    failure_reason = models.TextField(blank=True, null=True, verbose_name='失敗理由')
+    description = models.TextField(blank=True, null=True)
+    failure_reason = models.TextField(blank=True, null=True)
     
-    paid_at = models.DateTimeField(null=True, blank=True, verbose_name='支払い日時')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='作成日時')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新日時')
-    
-    class Meta:
-        verbose_name = '決済履歴'
-        verbose_name_plural = '決済履歴'
-        ordering = ['-created_at']
+    paid_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"{self.user.email} - ¥{self.amount} ({self.get_status_display()})"
-    
-    @property
-    def is_successful(self):
-        """決済が成功したかチェック"""
-        return self.status == 'succeeded'
+        return f"{self.user.email} - ¥{self.amount}"
 
 
 class StripeWebhookLog(models.Model):
-    """StripeのWebHookログ"""
+    stripe_event_id = models.CharField(max_length=255, unique=True)
+    event_type = models.CharField(max_length=100)
+    processed = models.BooleanField(default=False)
+    error_message = models.TextField(blank=True, null=True)
     
-    stripe_event_id = models.CharField(max_length=255, unique=True, verbose_name='StripeイベントID')
-    event_type = models.CharField(max_length=100, verbose_name='イベントタイプ')
-    processed = models.BooleanField(default=False, verbose_name='処理済み')
-    error_message = models.TextField(blank=True, null=True, verbose_name='エラーメッセージ')
-    
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='作成日時')
-    
-    class Meta:
-        verbose_name = 'WebHookログ'
-        verbose_name_plural = 'WebHookログ'
-        ordering = ['-created_at']
+    created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return f"{self.event_type} - {self.stripe_event_id}"

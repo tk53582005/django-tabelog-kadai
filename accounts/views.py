@@ -10,18 +10,14 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from django.utils.decorators import method_decorator
-from django.utils import timezone
 import stripe
 import json
-import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from .models import CustomUser, Subscription, PaymentHistory, StripeWebhookLog
 from .forms import UserProfileForm
 
 # Stripe設定
 stripe.api_key = settings.STRIPE_SECRET_KEY
-logger = logging.getLogger(__name__)
 
 
 class MyPageView(LoginRequiredMixin, TemplateView):
@@ -33,36 +29,14 @@ class MyPageView(LoginRequiredMixin, TemplateView):
         
         # お気に入り店舗を取得
         from restaurants.models import Favorite, Review, Reservation
-        context['favorite_restaurants'] = Favorite.objects.filter(user=user).select_related('restaurant')[:5]
+        context['favorite_restaurants'] = Favorite.objects.filter(user=user)[:5]
         
         # 最近のレビューを取得
-        context['recent_reviews'] = Review.objects.filter(user=user).select_related('restaurant').order_by('-created_at')[:5]
+        context['recent_reviews'] = Review.objects.filter(user=user).order_by('-created_at')[:5]
         
         # プレミアム会員の場合、予約履歴も取得
         if user.is_premium:
-            context['recent_reservations'] = Reservation.objects.filter(user=user).select_related('restaurant').order_by('-created_at')[:5]
-        
-        # サブスクリプション情報を取得
-        if user.is_premium:
-            subscription = user.get_subscription()
-            context['subscription'] = subscription
-            if subscription:
-                context['days_until_renewal'] = subscription.days_until_renewal
-                
-                # 支払い方法情報を取得
-                if user.stripe_customer_id:
-                    try:
-                        payment_methods = stripe.PaymentMethod.list(
-                            customer=user.stripe_customer_id,
-                            type="card"
-                        )
-                        if payment_methods.data:
-                            context['payment_method'] = payment_methods.data[0]
-                    except stripe.error.StripeError as e:
-                        logger.error(f"Failed to retrieve payment methods: {e}")
-        
-        # 決済履歴を取得
-        context['payment_history'] = PaymentHistory.objects.filter(user=user).order_by('-created_at')[:5]
+            context['recent_reservations'] = Reservation.objects.filter(user=user).order_by('-created_at')[:5]
         
         return context
 
@@ -96,10 +70,9 @@ def password_change_view(request):
     return render(request, 'accounts/password_change.html', {'form': form})
 
 
-# ===== カード管理機能 =====
+# カード管理機能
 
 class CardManageView(LoginRequiredMixin, TemplateView):
-    """クレジットカード管理ページ"""
     template_name = 'accounts/card_manage.html'
     
     def dispatch(self, request, *args, **kwargs):
@@ -112,8 +85,8 @@ class CardManageView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
-        try:
-            if user.stripe_customer_id:
+        if user.stripe_customer_id:
+            try:
                 # 支払い方法一覧を取得
                 payment_methods = stripe.PaymentMethod.list(
                     customer=user.stripe_customer_id,
@@ -125,15 +98,13 @@ class CardManageView(LoginRequiredMixin, TemplateView):
                 customer = stripe.Customer.retrieve(user.stripe_customer_id)
                 context['default_payment_method'] = customer.invoice_settings.default_payment_method
                 
-        except stripe.error.StripeError as e:
-            logger.error(f"Failed to retrieve payment methods: {e}")
-            messages.error(self.request, 'カード情報の取得に失敗しました。')
+            except:
+                messages.error(self.request, 'カード情報の取得に失敗しました。')
         
         return context
 
 
 class CardAddView(LoginRequiredMixin, TemplateView):
-    """新しいクレジットカード追加ページ"""
     template_name = 'accounts/card_add.html'
     
     def dispatch(self, request, *args, **kwargs):
@@ -182,14 +153,12 @@ class CardAddView(LoginRequiredMixin, TemplateView):
             messages.success(request, 'カードを追加しました。')
             return redirect('accounts:card_manage')
             
-        except stripe.error.StripeError as e:
-            logger.error(f"Failed to add payment method: {e}")
-            messages.error(request, f'カードの追加に失敗しました: {str(e)}')
+        except:
+            messages.error(request, 'カードの追加に失敗しました。')
             return self.get(request, *args, **kwargs)
 
 
 class CardChangeView(LoginRequiredMixin, TemplateView):
-    """クレジットカード変更ページ"""
     template_name = 'accounts/card_change.html'
     
     def dispatch(self, request, *args, **kwargs):
@@ -203,8 +172,8 @@ class CardChangeView(LoginRequiredMixin, TemplateView):
         context['stripe_public_key'] = settings.STRIPE_PUBLIC_KEY
         
         user = self.request.user
-        try:
-            if user.stripe_customer_id:
+        if user.stripe_customer_id:
+            try:
                 # 現在の支払い方法を取得
                 payment_methods = stripe.PaymentMethod.list(
                     customer=user.stripe_customer_id,
@@ -212,9 +181,8 @@ class CardChangeView(LoginRequiredMixin, TemplateView):
                 )
                 if payment_methods.data:
                     context['current_payment_method'] = payment_methods.data[0]
-                    
-        except stripe.error.StripeError as e:
-            logger.error(f"Failed to retrieve current payment method: {e}")
+            except:
+                pass
         
         return context
     
@@ -246,22 +214,20 @@ class CardChangeView(LoginRequiredMixin, TemplateView):
             if old_payment_method_id:
                 try:
                     stripe.PaymentMethod.detach(old_payment_method_id)
-                except stripe.error.StripeError as e:
-                    logger.warning(f"Failed to detach old payment method: {e}")
+                except:
+                    pass
             
             messages.success(request, 'カード情報を変更しました。')
             return redirect('accounts:card_manage')
             
-        except stripe.error.StripeError as e:
-            logger.error(f"Failed to change payment method: {e}")
-            messages.error(request, f'カードの変更に失敗しました: {str(e)}')
+        except:
+            messages.error(request, 'カードの変更に失敗しました。')
             return self.get(request, *args, **kwargs)
 
 
 @login_required
 @require_POST
 def set_default_card(request):
-    """デフォルトの支払い方法を設定"""
     try:
         payment_method_id = request.POST.get('payment_method_id')
         user = request.user
@@ -282,21 +248,15 @@ def set_default_card(request):
         
         return JsonResponse({'success': True, 'message': 'メインカードを設定しました'})
         
-    except stripe.error.StripeError as e:
-        logger.error(f"Failed to set default payment method: {e}")
-        return JsonResponse({'error': str(e)}, status=400)
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-        return JsonResponse({'error': '予期しないエラーが発生しました'}, status=500)
+    except:
+        return JsonResponse({'error': 'エラーが発生しました'}, status=500)
 
 
 @login_required
 @require_POST
 def remove_payment_method(request):
-    """支払い方法の削除"""
     try:
         payment_method_id = request.POST.get('payment_method_id')
-        user = request.user
         
         if not payment_method_id:
             return JsonResponse({'error': '支払い方法IDが必要です'}, status=400)
@@ -306,14 +266,12 @@ def remove_payment_method(request):
         
         return JsonResponse({'success': True, 'message': 'カードを削除しました'})
         
-    except stripe.error.StripeError as e:
-        logger.error(f"Failed to remove payment method: {e}")
-        return JsonResponse({'error': str(e)}, status=400)
+    except:
+        return JsonResponse({'error': 'エラーが発生しました'}, status=400)
 
 
 @login_required
 def billing_portal(request):
-    """Stripe請求ポータルにリダイレクト"""
     try:
         user = request.user
         
@@ -329,16 +287,14 @@ def billing_portal(request):
         
         return redirect(session.url)
         
-    except stripe.error.StripeError as e:
-        logger.error(f"Failed to create billing portal session: {e}")
+    except:
         messages.error(request, '請求ポータルへのアクセスに失敗しました。')
         return redirect('accounts:mypage')
 
 
-# ===== Stripe決済システム =====
+# Stripe決済システム
 
 class SubscriptionPlanView(LoginRequiredMixin, TemplateView):
-    """サブスクリプションプラン表示"""
     template_name = 'accounts/subscription_plan.html'
     
     def get_context_data(self, **kwargs):
@@ -355,7 +311,6 @@ class SubscriptionPlanView(LoginRequiredMixin, TemplateView):
 
 @login_required
 def create_checkout_session(request):
-    """Stripe Checkout セッション作成"""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST method required'}, status=400)
     
@@ -394,20 +349,13 @@ def create_checkout_session(request):
             }
         )
         
-        logger.info(f"Checkout session created for user {user.id}: {checkout_session.id}")
-        
         return JsonResponse({'checkout_url': checkout_session.url})
     
-    except stripe.error.StripeError as e:
-        logger.error(f"Stripe error: {e}")
-        return JsonResponse({'error': str(e)}, status=400)
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
+    except:
         return JsonResponse({'error': '予期しないエラーが発生しました'}, status=500)
 
 
 class PaymentSuccessView(LoginRequiredMixin, TemplateView):
-    """決済成功ページ"""
     template_name = 'accounts/payment_success.html'
     
     def get_context_data(self, **kwargs):
@@ -425,20 +373,17 @@ class PaymentSuccessView(LoginRequiredMixin, TemplateView):
                     subscription = stripe.Subscription.retrieve(session.subscription)
                     context['subscription'] = subscription
                     
-            except stripe.error.StripeError as e:
-                logger.error(f"Failed to retrieve session {session_id}: {e}")
+            except:
                 messages.error(self.request, '決済情報の取得に失敗しました。')
         
         return context
 
 
 class PaymentCancelView(LoginRequiredMixin, TemplateView):
-    """決済キャンセルページ"""
     template_name = 'accounts/payment_cancel.html'
 
 
 class SubscriptionManageView(LoginRequiredMixin, TemplateView):
-    """サブスクリプション管理ページ"""
     template_name = 'accounts/subscription_manage.html'
     
     def dispatch(self, request, *args, **kwargs):
@@ -465,7 +410,6 @@ class SubscriptionManageView(LoginRequiredMixin, TemplateView):
 @login_required
 @require_POST
 def cancel_subscription(request):
-    """サブスクリプションキャンセル"""
     try:
         user = request.user
         subscription = user.get_subscription()
@@ -479,22 +423,16 @@ def cancel_subscription(request):
             cancel_at_period_end=True
         )
         
-        logger.info(f"Subscription {subscription.stripe_subscription_id} marked for cancellation")
-        messages.success(request, 'サブスクリプションのキャンセルを受け付けました。現在の期間終了時に停止されます。')
+        messages.success(request, 'サブスクリプションのキャンセルを受け付けました。')
         
         return JsonResponse({'success': True})
     
-    except stripe.error.StripeError as e:
-        logger.error(f"Stripe error during cancellation: {e}")
-        return JsonResponse({'error': str(e)}, status=400)
-    except Exception as e:
-        logger.error(f"Unexpected error during cancellation: {e}")
+    except:
         return JsonResponse({'error': '予期しないエラーが発生しました'}, status=500)
 
 
 @csrf_exempt
 def stripe_webhook(request):
-    """Stripe WebHook処理"""
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
@@ -504,11 +442,7 @@ def stripe_webhook(request):
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
         )
-    except ValueError as e:
-        logger.error(f"Invalid payload: {e}")
-        return HttpResponse(status=400)
-    except stripe.error.SignatureVerificationError as e:
-        logger.error(f"Invalid signature: {e}")
+    except:
         return HttpResponse(status=400)
     
     # WebHookログを記録
@@ -521,7 +455,6 @@ def stripe_webhook(request):
     )
     
     if not created and webhook_log.processed:
-        # 既に処理済みの場合はスキップ
         return HttpResponse(status=200)
     
     try:
@@ -541,11 +474,8 @@ def stripe_webhook(request):
         webhook_log.processed = True
         webhook_log.save()
         
-        logger.info(f"Webhook {event['id']} processed successfully")
-        
-    except Exception as e:
-        logger.error(f"Error processing webhook {event['id']}: {e}")
-        webhook_log.error_message = str(e)
+    except:
+        webhook_log.error_message = 'エラーが発生しました'
         webhook_log.save()
         return HttpResponse(status=500)
     
@@ -553,9 +483,8 @@ def stripe_webhook(request):
 
 
 def handle_subscription_created(subscription_data):
-    """サブスクリプション作成時の処理"""
     try:
-        # 顧客情報から用ユーザーを特定
+        # 顧客情報からユーザーを特定
         customer = stripe.Customer.retrieve(subscription_data['customer'])
         user = CustomUser.objects.get(stripe_customer_id=customer.id)
         
@@ -566,21 +495,15 @@ def handle_subscription_created(subscription_data):
             stripe_customer_id=customer.id,
             stripe_price_id=subscription_data['items']['data'][0]['price']['id'],
             status=subscription_data['status'],
-            current_period_start=datetime.fromtimestamp(subscription_data['current_period_start'], tz=timezone.utc),
-            current_period_end=datetime.fromtimestamp(subscription_data['current_period_end'], tz=timezone.utc),
+            current_period_start=datetime.fromtimestamp(subscription_data['current_period_start']),
+            current_period_end=datetime.fromtimestamp(subscription_data['current_period_end']),
         )
         
-        logger.info(f"Subscription created for user {user.id}")
-        
-    except CustomUser.DoesNotExist:
-        logger.error(f"User not found for customer {subscription_data['customer']}")
-    except Exception as e:
-        logger.error(f"Error creating subscription: {e}")
-        raise
+    except:
+        pass
 
 
 def handle_subscription_updated(subscription_data):
-    """サブスクリプション更新時の処理"""
     try:
         subscription = Subscription.objects.get(
             stripe_subscription_id=subscription_data['id']
@@ -588,21 +511,15 @@ def handle_subscription_updated(subscription_data):
         
         # ステータスと期間を更新
         subscription.status = subscription_data['status']
-        subscription.current_period_start = datetime.fromtimestamp(subscription_data['current_period_start'], tz=timezone.utc)
-        subscription.current_period_end = datetime.fromtimestamp(subscription_data['current_period_end'], tz=timezone.utc)
+        subscription.current_period_start = datetime.fromtimestamp(subscription_data['current_period_start'])
+        subscription.current_period_end = datetime.fromtimestamp(subscription_data['current_period_end'])
         subscription.save()
         
-        logger.info(f"Subscription {subscription.id} updated")
-        
-    except Subscription.DoesNotExist:
-        logger.error(f"Subscription not found: {subscription_data['id']}")
-    except Exception as e:
-        logger.error(f"Error updating subscription: {e}")
-        raise
+    except:
+        pass
 
 
 def handle_subscription_deleted(subscription_data):
-    """サブスクリプション削除時の処理"""
     try:
         subscription = Subscription.objects.get(
             stripe_subscription_id=subscription_data['id']
@@ -611,17 +528,11 @@ def handle_subscription_deleted(subscription_data):
         subscription.status = 'canceled'
         subscription.save()
         
-        logger.info(f"Subscription {subscription.id} canceled")
-        
-    except Subscription.DoesNotExist:
-        logger.error(f"Subscription not found: {subscription_data['id']}")
-    except Exception as e:
-        logger.error(f"Error canceling subscription: {e}")
-        raise
+    except:
+        pass
 
 
 def handle_payment_succeeded(invoice_data):
-    """決済成功時の処理"""
     try:
         # サブスクリプションを特定
         subscription = Subscription.objects.get(
@@ -634,24 +545,18 @@ def handle_payment_succeeded(invoice_data):
             subscription=subscription,
             stripe_payment_intent_id=invoice_data['payment_intent'],
             stripe_invoice_id=invoice_data['id'],
-            amount=invoice_data['amount_paid'] / 100,  # セントから円に変換
+            amount=invoice_data['amount_paid'] / 100,
             currency=invoice_data['currency'],
             status='succeeded',
-            description=f"プレミアム会員 月額料金",
-            paid_at=datetime.fromtimestamp(invoice_data['status_transitions']['paid_at'], tz=timezone.utc),
+            description="プレミアム会員 月額料金",
+            paid_at=datetime.fromtimestamp(invoice_data['status_transitions']['paid_at']),
         )
         
-        logger.info(f"Payment recorded for user {subscription.user.id}")
-        
-    except Subscription.DoesNotExist:
-        logger.error(f"Subscription not found for invoice {invoice_data['id']}")
-    except Exception as e:
-        logger.error(f"Error recording payment: {e}")
-        raise
+    except:
+        pass
 
 
 def handle_payment_failed(invoice_data):
-    """決済失敗時の処理"""
     try:
         subscription = Subscription.objects.get(
             stripe_subscription_id=invoice_data['subscription']
@@ -666,14 +571,9 @@ def handle_payment_failed(invoice_data):
             amount=invoice_data['amount_due'] / 100,
             currency=invoice_data['currency'],
             status='failed',
-            description=f"プレミアム会員 月額料金（決済失敗）",
-            failure_reason=invoice_data.get('last_finalization_error', {}).get('message', '不明なエラー'),
+            description="プレミアム会員 月額料金（決済失敗）",
+            failure_reason='決済に失敗しました',
         )
         
-        logger.warning(f"Payment failed for user {subscription.user.id}")
-        
-    except Subscription.DoesNotExist:
-        logger.error(f"Subscription not found for failed invoice {invoice_data['id']}")
-    except Exception as e:
-        logger.error(f"Error recording failed payment: {e}")
-        raise
+    except:
+        pass

@@ -1,151 +1,98 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
 
-{% block title %}NAGOYAMESHI - 名古屋のグルメ情報{% endblock %}
+{% block title %}店舗一覧 - NAGOYAMESHI{% endblock %}
 
 {% block content %}
-<!-- ヒーローセクション -->
-<div class="bg-primary text-white py-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <!-- 中央揃えに修正：text-centerクラスを追加 -->
-            <div class="col-lg-8 mx-auto text-center">
-                <h1 class="display-4 fw-bold mb-3">NAGOYAMESHI</h1>
-                <p class="lead mb-4">名古屋の美味しいお店を見つけよう</p>
-                
-                <!-- 検索フォーム：中央揃え用に調整 -->
-                <form method="GET" class="d-flex justify-content-center">
-                    <div class="input-group me-2" style="max-width: 600px;">
-                        <input type="text" class="form-control" name="keyword" 
-                               placeholder="店舗名・カテゴリ・住所で検索" value="{{ keyword }}">
-                        <select class="form-select" name="category" style="max-width: 150px;">
-                            <option value="">全カテゴリ</option>
-                            {% for category in categories %}
-                            <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
-                                {{ category.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button class="btn btn-light px-4" type="submit" style="white-space: nowrap;">
-                        <i class="fas fa-search"></i> 検索
-                    </button>
-                </form>
-            </div>
-            <!-- アイコンセクションを削除してよりシンプルに -->
+<div class="container mt-4">
+    <!-- 検索フォーム -->
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
+            <form method="GET" class="d-flex">
+                <input class="form-control me-2" 
+                       type="search" 
+                       name="keyword" 
+                       placeholder="店舗名・カテゴリ・住所で検索" 
+                       value="{{ request.GET.keyword }}">
+                <button class="btn btn-primary" type="submit">検索</button>
+            </form>
         </div>
     </div>
-</div>
 
-<!-- 店舗一覧 -->
-<div class="container my-5">
-    {% if keyword or selected_category %}
-    <div class="mb-4">
-        <h2>検索結果</h2>
-        <p class="text-muted">
-            {% if keyword %}「{{ keyword }}」{% endif %}
-            {% if selected_category %}
-                {% for category in categories %}
-                    {% if category.id|stringformat:"s" == selected_category %}{{ category.name }}{% endif %}
-                {% endfor %}
-            {% endif %}
-            の検索結果: {{ restaurants|length }}件
-        </p>
-    </div>
-    {% else %}
-    <div class="text-center mb-5">
-        <h2>おすすめの店舗</h2>
-        <p class="text-muted">名古屋の美味しいお店をご紹介します</p>
-    </div>
-    {% endif %}
-
+    <!-- 店舗一覧 -->
     <div class="row">
         {% for restaurant in restaurants %}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 shadow-sm restaurant-card">
-                <!-- 写真部分をクリック可能に -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <!-- 店舗画像 -->
                 {% if restaurant.image %}
-                <a href="{% url 'restaurants:detail' restaurant.pk %}" class="restaurant-image-link">
-                    <img src="{{ restaurant.image.url }}" class="card-img-top restaurant-image" alt="{{ restaurant.name }}" style="height: 200px; object-fit: cover;">
-                    <div class="image-overlay">
-                        <i class="fas fa-eye"></i>
-                        <span>詳細を見る</span>
-                    </div>
+                <a href="{% url 'restaurants:detail' restaurant.pk %}">
+                    <img src="{{ restaurant.image.url }}" class="card-img-top" alt="{{ restaurant.name }}" style="height: 200px; object-fit: cover;">
                 </a>
                 {% else %}
-                <a href="{% url 'restaurants:detail' restaurant.pk %}" class="restaurant-image-link">
-                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center restaurant-image" style="height: 200px;">
-                        <i class="fas fa-image fa-2x text-muted"></i>
-                    </div>
-                    <div class="image-overlay">
-                        <i class="fas fa-eye"></i>
-                        <span>詳細を見る</span>
-                    </div>
-                </a>
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <span class="text-muted">画像なし</span>
+                </div>
                 {% endif %}
                 
-                <div class="card-body d-flex flex-column">
-                    <div class="mb-2">
-                        <span class="badge bg-primary mb-2">{{ restaurant.category.name }}</span>
-                        <!-- タイトルもクリック可能に -->
-                        <h5 class="card-title">
-                            <a href="{% url 'restaurants:detail' restaurant.pk %}" class="restaurant-title-link">
-                                {{ restaurant.name }}
-                            </a>
-                        </h5>
-                    </div>
+                <div class="card-body">
+                    <!-- 店舗名 -->
+                    <h5 class="card-title">
+                        <a href="{% url 'restaurants:detail' restaurant.pk %}" class="text-decoration-none">
+                            {{ restaurant.name }}
+                        </a>
+                    </h5>
                     
-                    <p class="card-text text-muted small flex-grow-1">
-                        {{ restaurant.description|truncatechars:80 }}
+                    <!-- カテゴリ -->
+                    <p class="card-text">
+                        <small class="text-muted">{{ restaurant.category.name }}</small>
                     </p>
                     
-                    <div class="mt-auto">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <small class="text-muted">
-                                <i class="fas fa-map-marker-alt"></i> {{ restaurant.address|truncatechars:20 }}
-                            </small>
-                            {% if restaurant.min_price and restaurant.max_price %}
-                            <small class="text-muted">
-                                ¥{{ restaurant.min_price|floatformat:0 }}-{{ restaurant.max_price|floatformat:0 }}
-                            </small>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <!-- 実際の評価表示 -->
-                                {% if restaurant.get_average_rating > 0 %}
-                                <span class="text-warning">
-                                    {% for i in "12345" %}
-                                        {% if restaurant.get_average_rating >= i|add:0 %}
-                                            <i class="fas fa-star"></i>
-                                        {% else %}
-                                            <i class="far fa-star"></i>
-                                        {% endif %}
-                                    {% endfor %}
-                                </span>
-                                <small class="text-muted ms-1">{{ restaurant.get_average_rating|floatformat:1 }}</small>
-                                {% else %}
-                                <span class="text-muted small">評価なし</span>
-                                {% endif %}
-                            </div>
-                            <a href="{% url 'restaurants:detail' restaurant.pk %}" class="btn btn-primary btn-sm">
-                                詳細を見る <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
+                    <!-- 説明 -->
+                    {% if restaurant.description %}
+                    <p class="card-text">{{ restaurant.description|truncatechars:100 }}</p>
+                    {% endif %}
+                    
+                    <!-- 住所 -->
+                    <p class="card-text">
+                        <i class="fas fa-map-marker-alt"></i> {{ restaurant.address }}
+                    </p>
+                    
+                    <!-- 営業時間 -->
+                    <p class="card-text">
+                        <i class="fas fa-clock"></i> {{ restaurant.opening_time }} - {{ restaurant.closing_time }}
+                    </p>
+                    
+                    <!-- 評価 -->
+                    <div class="mb-2">
+                        {% with rating=restaurant.get_average_rating %}
+                        {% if rating > 0 %}
+                            <span class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= rating %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            <small class="text-muted">({{ rating }})</small>
+                        {% else %}
+                            <small class="text-muted">評価なし</small>
+                        {% endif %}
+                        {% endwith %}
                     </div>
+                    
+                    <!-- 詳細ボタン -->
+                    <a href="{% url 'restaurants:detail' restaurant.pk %}" class="btn btn-primary btn-sm">詳細を見る</a>
                 </div>
             </div>
         </div>
         {% empty %}
         <div class="col-12">
-            <div class="text-center py-5">
-                <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                <h4>お店が見つかりませんでした</h4>
-                <p class="text-muted">検索条件を変更してお試しください</p>
-                <a href="{% url 'restaurants:index' %}" class="btn btn-primary">
-                    <i class="fas fa-home"></i> トップページに戻る
-                </a>
+            <div class="alert alert-info text-center">
+                <h4>店舗が見つかりませんでした</h4>
+                <p>検索条件を変更してお試しください。</p>
             </div>
         </div>
         {% endfor %}
@@ -153,132 +100,25 @@
 
     <!-- ページネーション -->
     {% if is_paginated %}
-    <nav aria-label="ページネーション" class="mt-4">
+    <nav aria-label="ページネーション">
         <ul class="pagination justify-content-center">
             {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page=1{% if keyword %}&keyword={{ keyword }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
-                    <i class="fas fa-angle-double-left"></i>
-                </a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if keyword %}&keyword={{ keyword }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
-                    <i class="fas fa-angle-left"></i>
-                </a>
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.keyword %}&keyword={{ request.GET.keyword }}{% endif %}">前へ</a>
             </li>
             {% endif %}
-
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                <li class="page-item active">
-                    <span class="page-link">{{ num }}</span>
-                </li>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ num }}{% if keyword %}&keyword={{ keyword }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
-                </li>
-                {% endif %}
-            {% endfor %}
-
+            
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            
             {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if keyword %}&keyword={{ keyword }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
-                    <i class="fas fa-angle-right"></i>
-                </a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if keyword %}&keyword={{ keyword }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
-                    <i class="fas fa-angle-double-right"></i>
-                </a>
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.keyword %}&keyword={{ request.GET.keyword }}{% endif %}">次へ</a>
             </li>
             {% endif %}
         </ul>
     </nav>
     {% endif %}
 </div>
-
-<!-- 追加のCSS -->
-<style>
-/* 写真リンクのスタイリング */
-.restaurant-image-link {
-    display: block;
-    position: relative;
-    text-decoration: none;
-    overflow: hidden;
-    border-radius: 8px 8px 0 0;
-}
-
-.restaurant-image {
-    transition: transform 0.3s ease;
-}
-
-/* ホバー時の画像拡大効果 */
-.restaurant-image-link:hover .restaurant-image {
-    transform: scale(1.05);
-}
-
-/* オーバーレイ効果 */
-.image-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.restaurant-image-link:hover .image-overlay {
-    opacity: 1;
-}
-
-.image-overlay i {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
-.image-overlay span {
-    font-size: 1rem;
-    font-weight: 500;
-}
-
-/* タイトルリンクのスタイリング */
-.restaurant-title-link {
-    color: inherit;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.restaurant-title-link:hover {
-    color: #0d6efd;
-    text-decoration: none;
-}
-
-/* カード全体のホバー効果を強化 */
-.restaurant-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.restaurant-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* レスポンシブ対応 */
-@media (max-width: 768px) {
-    .image-overlay i {
-        font-size: 1.5rem;
-    }
-    
-    .image-overlay span {
-        font-size: 0.9rem;
-    }
-}
-</style>
 {% endblock %}

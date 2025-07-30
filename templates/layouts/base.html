@@ -7,8 +7,6 @@
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -16,9 +14,8 @@
     <!-- ナビゲーション -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <!-- ブランドロゴをクリック可能に（トップページへのリンク） -->
-            <a class="navbar-brand fw-bold" href="{% url 'restaurants:index' %}">
-                <i class="fas fa-utensils"></i> NAGOYAMESHI
+            <a class="navbar-brand" href="{% url 'restaurants:index' %}">
+                NAGOYAMESHI
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -26,100 +23,36 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <!-- 左側のナビゲーションメニューを削除（トップリンクを削除） -->
-                <!-- 
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'restaurants:index' %}">
-                            <i class="fas fa-home"></i> トップ
-                        </a>
-                    </li>
-                </ul>
-                -->
-                
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                        <!-- ログイン済みユーザー -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle"></i> 
-                                {% if user.first_name %}
-                                    {{ user.first_name }}さん
-                                {% else %}
-                                    {{ user.email|truncatechars:15 }}
-                                {% endif %}
-                                {% if user.is_premium %}
-                                    <i class="fas fa-crown text-warning ms-1"></i>
-                                {% endif %}
+                        <!-- ログイン済み -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:mypage' %}">
+                                マイページ
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'accounts:mypage' %}">
-                                        <i class="fas fa-user me-2"></i>マイページ
-                                    </a>
-                                </li>
-                                {% if user.is_premium %}
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'restaurants:favorite_list' %}">
-                                        <i class="fas fa-heart me-2"></i>お気に入り
-                                    </a>
-                                </li>
-                                {% endif %}
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'accounts:profile_edit' %}">
-                                        <i class="fas fa-edit me-2"></i>プロフィール編集
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'accounts:password_change' %}">
-                                        <i class="fas fa-key me-2"></i>パスワード変更
-                                    </a>
-                                </li>
-                                
-                                <!-- カード管理メニューを追加 -->
-                                {% if user.is_premium %}
-                                <li>
-                                    <a class="dropdown-item text-info" href="{% url 'accounts:card_manage' %}">
-                                        <i class="fas fa-credit-card me-2"></i>カード情報管理
-                                    </a>
-                                </li>
-                                {% endif %}
-                                
-                                <li><hr class="dropdown-divider"></li>
-                                
-                                <!-- サブスクリプション関連 -->
-                                {% if user.is_premium %}
-                                <li>
-                                    <a class="dropdown-item text-warning" href="{% url 'accounts:subscription_manage' %}">
-                                        <i class="fas fa-crown me-2"></i>サブスクリプション管理
-                                    </a>
-                                </li>
-                                {% else %}
-                                <li>
-                                    <a class="dropdown-item text-warning" href="{% url 'accounts:subscription_plan' %}">
-                                        <i class="fas fa-crown me-2"></i>プレミアム会員になる
-                                    </a>
-                                </li>
-                                {% endif %}
-                                
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'account_logout' %}">
-                                        <i class="fas fa-sign-out-alt me-2"></i>ログアウト
-                                    </a>
-                                </li>
-                            </ul>
+                        </li>
+                        {% if user.is_premium %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'restaurants:favorite_list' %}">
+                                お気に入り
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'account_logout' %}">
+                                ログアウト
+                            </a>
                         </li>
                     {% else %}
-                        <!-- 未ログインユーザー -->
+                        <!-- 未ログイン -->
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'account_login' %}">
-                                <i class="fas fa-sign-in-alt"></i> ログイン
+                                ログイン
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'account_signup' %}">
-                                <i class="fas fa-user-plus"></i> 会員登録
+                                会員登録
                             </a>
                         </li>
                     {% endif %}
@@ -134,9 +67,8 @@
         {% if messages %}
         <div class="container mt-3">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{{ message.tags }}">
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             {% endfor %}
         </div>
@@ -149,37 +81,10 @@
     <!-- フッター -->
     <footer class="bg-dark text-white mt-5">
         <div class="container py-4">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>
-                        <a href="{% url 'restaurants:index' %}" class="text-white text-decoration-none">
-                            <i class="fas fa-utensils"></i> NAGOYAMESHI
-                        </a>
-                    </h5>
-                    <p>名古屋の美味しいお店を見つけよう</p>
-                </div>
-                <div class="col-md-6">
-                    <h6>リンク</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="{% url 'restaurants:index' %}" class="text-white-50">トップページ</a></li>
-                        {% if user.is_authenticated %}
-                        <li><a href="{% url 'accounts:mypage' %}" class="text-white-50">マイページ</a></li>
-                        {% if user.is_premium %}
-                        <li><a href="{% url 'accounts:card_manage' %}" class="text-white-50">カード情報管理</a></li>
-                        <li><a href="{% url 'accounts:subscription_manage' %}" class="text-white-50">サブスクリプション管理</a></li>
-                        {% else %}
-                        <li><a href="{% url 'accounts:subscription_plan' %}" class="text-white-50">プレミアム会員</a></li>
-                        {% endif %}
-                        {% else %}
-                        <li><a href="{% url 'account_login' %}" class="text-white-50">ログイン</a></li>
-                        <li><a href="{% url 'account_signup' %}" class="text-white-50">会員登録</a></li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-            <hr>
             <div class="text-center">
-                <small>&copy; 2025 NAGOYAMESHI. All rights reserved.</small>
+                <h5>NAGOYAMESHI</h5>
+                <p>名古屋のグルメ情報サイト</p>
+                <small>&copy; 2025 NAGOYAMESHI</small>
             </div>
         </div>
     </footer>

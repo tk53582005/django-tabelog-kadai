@@ -1,183 +1,52 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
 
 {% block title %}決済キャンセル - NAGOYAMESHI{% endblock %}
 
-{% block extra_css %}
-<style>
-    .cancel-container {
-        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-        color: white;
-        min-height: 50vh;
-        display: flex;
-        align-items: center;
-        margin: -20px -15px 40px -15px;
-    }
-
-    .cancel-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 40px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-        color: #333;
-        text-align: center;
-    }
-
-    .cancel-icon {
-        font-size: 4rem;
-        color: #6c757d;
-        margin-bottom: 20px;
-    }
-
-    .reason-card {
-        background: #f8f9fa;
-        border-radius: 15px;
-        padding: 20px;
-        margin: 15px 0;
-        border-left: 4px solid #007bff;
-        text-align: left;
-    }
-
-    .btn-retry {
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-        border: none;
-        border-radius: 25px;
-        padding: 12px 30px;
-        color: white;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-retry:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.6);
-        color: white;
-    }
-
-    .benefits-reminder {
-        background: linear-gradient(135deg, #f8f9ff 0%, #fff5f5 100%);
-        border-radius: 15px;
-        padding: 25px;
-        margin: 30px 0;
-    }
-
-    .benefit-item {
-        display: flex;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
-    }
-
-    .benefit-item:last-child {
-        border-bottom: none;
-    }
-
-    .benefit-icon {
-        color: #28a745;
-        margin-right: 15px;
-        font-size: 1.2rem;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="cancel-container">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="cancel-card">
-                    <div class="cancel-icon">
-                        <i class="fas fa-times-circle"></i>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-times-circle fa-4x text-muted"></i>
                     </div>
                     
-                    <h1 class="h2 mb-3">決済がキャンセルされました</h1>
-                    <p class="lead mb-4">
+                    <h2 class="mb-3">決済がキャンセルされました</h2>
+                    <p class="mb-4">
                         プレミアム会員の登録は完了していません。<br>
-                        ご不明な点がございましたら、お気軽にお問い合わせください。
+                        もう一度お試しいただくか、トップページにお戻りください。
                     </p>
 
-                    <!-- よくあるキャンセル理由 -->
-                    <div class="text-start mb-4">
-                        <h5 class="mb-3"><i class="fas fa-info-circle text-info me-2"></i>よくあるキャンセル理由</h5>
-                        
-                        <div class="reason-card">
-                            <h6><i class="fas fa-credit-card text-warning me-2"></i>クレジットカード情報の確認</h6>
-                            <small class="text-muted">
-                                カード番号、有効期限、セキュリティコードを再度ご確認ください。
-                            </small>
-                        </div>
+                    <!-- よくある理由 -->
+                    <div class="alert alert-info">
+                        <h6>よくあるキャンセル理由</h6>
+                        <ul class="text-start mb-0">
+                            <li>クレジットカード情報の入力ミス</li>
+                            <li>カード会社での認証が必要</li>
+                            <li>もう少し検討したい</li>
+                        </ul>
+                    </div>
 
-                        <div class="reason-card">
-                            <h6><i class="fas fa-shield-alt text-primary me-2"></i>セキュリティ確認</h6>
-                            <small class="text-muted">
-                                ご利用のカード会社で追加認証が必要な場合があります。
-                            </small>
-                        </div>
-
-                        <div class="reason-card">
-                            <h6><i class="fas fa-clock text-success me-2"></i>時間をかけて検討</h6>
-                            <small class="text-muted">
-                                プレミアム機能について、もう少し詳しく知りたい場合はこちらをご覧ください。
-                            </small>
+                    <!-- プレミアム特典の再確認 -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6>プレミアム会員の特典</h6>
+                            <ul class="text-start mb-0">
+                                <li>レストラン予約機能</li>
+                                <li>レビュー投稿</li>
+                                <li>お気に入り無制限登録</li>
+                                <li>詳細な検索機能</li>
+                            </ul>
                         </div>
                     </div>
 
-                    <div class="benefits-reminder">
-                        <h5 class="mb-3 text-center">
-                            <i class="fas fa-crown text-warning me-2"></i>プレミアム会員の特典
-                        </h5>
-                        
-                        <div class="benefit-item">
-                            <i class="fas fa-calendar-check benefit-icon"></i>
-                            <div>
-                                <strong>レストラン予約機能</strong>
-                                <div class="small text-muted">お気に入りの店舗を簡単予約</div>
-                            </div>
-                        </div>
-
-                        <div class="benefit-item">
-                            <i class="fas fa-edit benefit-icon"></i>
-                            <div>
-                                <strong>レビュー投稿・編集</strong>
-                                <div class="small text-muted">体験をシェアして他のユーザーに貢献</div>
-                            </div>
-                        </div>
-
-                        <div class="benefit-item">
-                            <i class="fas fa-heart benefit-icon"></i>
-                            <div>
-                                <strong>無制限お気に入り登録</strong>
-                                <div class="small text-muted">気になる店舗をすべて保存</div>
-                            </div>
-                        </div>
-
-                        <div class="benefit-item">
-                            <i class="fas fa-search-plus benefit-icon"></i>
-                            <div>
-                                <strong>詳細な検索フィルター</strong>
-                                <div class="small text-muted">価格帯・評価・距離で絞り込み</div>
-                            </div>
-                        </div>
-
-                        <div class="benefit-item">
-                            <i class="fas fa-headset benefit-icon"></i>
-                            <div>
-                                <strong>優先サポート</strong>
-                                <div class="small text-muted">困った時に迅速にサポート</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-center">
-                        <a href="{% url 'accounts:subscription_plan' %}" class="btn-retry me-3">
-                            <i class="fas fa-redo me-2"></i>もう一度試す
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'accounts:subscription_plan' %}" class="btn btn-primary">
+                            もう一度試す
                         </a>
-                        <a href="{% url 'restaurants:index' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-home me-2"></i>トップページ
+                        <a href="{% url 'restaurants:index' %}" class="btn btn-secondary">
+                            トップページ
                         </a>
                     </div>
                 </div>
@@ -187,62 +56,51 @@
 </div>
 
 <!-- 無料機能の案内 -->
-<div class="container mb-5">
+<div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="text-center mb-4">
-                <h3>
-                    <i class="fas fa-gift text-primary me-2"></i>無料でもお楽しみいただけます
-                </h3>
-                <p class="text-muted">
-                    プレミアム会員にならなくても、NAGOYAMESHIの基本機能はご利用いただけます。
-                </p>
-            </div>
-
+        <div class="col-md-8">
+            <h4 class="text-center mb-4">無料でもご利用いただけます</h4>
+            
             <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
+                <div class="col-md-6 mb-3">
+                    <div class="card">
                         <div class="card-body text-center">
-                            <i class="fas fa-search fa-2x text-primary mb-3"></i>
-                            <h5>レストラン検索</h5>
-                            <p class="text-muted small">
-                                名古屋のレストラン情報を自由に検索・閲覧できます。
+                            <h6>レストラン検索</h6>
+                            <p class="small text-muted">
+                                名古屋のレストラン情報を検索できます
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
+                <div class="col-md-6 mb-3">
+                    <div class="card">
                         <div class="card-body text-center">
-                            <i class="fas fa-heart fa-2x text-danger mb-3"></i>
-                            <h5>お気に入り登録</h5>
-                            <p class="text-muted small">
-                                気になるレストランを5件まで保存できます。
+                            <h6>お気に入り登録</h6>
+                            <p class="small text-muted">
+                                気になるレストランを5件まで保存
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
+                <div class="col-md-6 mb-3">
+                    <div class="card">
                         <div class="card-body text-center">
-                            <i class="fas fa-info-circle fa-2x text-info mb-3"></i>
-                            <h5>詳細情報</h5>
-                            <p class="text-muted small">
-                                営業時間、住所、電話番号などの基本情報を確認できます。
+                            <h6>詳細情報</h6>
+                            <p class="small text-muted">
+                                営業時間や住所などの基本情報
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
+                <div class="col-md-6 mb-3">
+                    <div class="card">
                         <div class="card-body text-center">
-                            <i class="fas fa-star fa-2x text-warning mb-3"></i>
-                            <h5>レビュー閲覧</h5>
-                            <p class="text-muted small">
-                                他のユーザーのレビューを参考にできます。
+                            <h6>レビュー閲覧</h6>
+                            <p class="small text-muted">
+                                他のユーザーのレビューを参考に
                             </p>
                         </div>
                     </div>
@@ -250,14 +108,8 @@
             </div>
 
             <div class="text-center mt-4">
-                <p class="text-muted mb-3">
-                    いつでもプレミアム会員にアップグレードできます。
-                </p>
-                <a href="{% url 'restaurants:index' %}" class="btn btn-primary me-2">
-                    <i class="fas fa-utensils me-2"></i>レストランを探す
-                </a>
-                <a href="{% url 'accounts:subscription_plan' %}" class="btn btn-outline-primary">
-                    <i class="fas fa-crown me-2"></i>プレミアム機能を見る
+                <a href="{% url 'restaurants:index' %}" class="btn btn-primary">
+                    レストランを探す
                 </a>
             </div>
         </div>
@@ -265,37 +117,19 @@
 </div>
 
 <!-- サポート -->
-<div class="bg-light py-4">
+<div class="bg-light py-4 mt-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-6 text-center">
-                <h5>
-                    <i class="fas fa-question-circle text-primary me-2"></i>お困りですか？
-                </h5>
-                <p class="text-muted mb-3">
-                    決済についてご不明な点がございましたら、お気軽にお問い合わせください。
+            <div class="col-md-6 text-center">
+                <h6>お困りですか？</h6>
+                <p class="text-muted">
+                    決済についてご不明な点がございましたら、お問い合わせください。
                 </p>
                 <a href="mailto:support@nagoyameshi.com" class="btn btn-outline-primary">
-                    <i class="fas fa-envelope me-1"></i>サポートに連絡
+                    サポートに連絡
                 </a>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-// キャンセル理由の分析（オプション）
-document.addEventListener('DOMContentLoaded', function() {
-    // 簡単な分析のためのログ
-    console.log('Payment canceled at:', new Date().toISOString());
-    
-    // 再試行ボタンにトラッキング
-    const retryButton = document.querySelector('.btn-retry');
-    if (retryButton) {
-        retryButton.addEventListener('click', function() {
-            console.log('User clicked retry payment');
-        });
-    }
-});
-</script>
 {% endblock %}

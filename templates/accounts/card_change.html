@@ -1,397 +1,110 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
 
-{% block title %}カード情報変更 - NAGOYAMESHI{% endblock %}
-
-{% block extra_css %}
-<style>
-    .comparison-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        padding: 40px;
-        color: white;
-        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
-    }
-    
-    .card-comparison {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        gap: 20px;
-        align-items: center;
-        margin: 30px 0;
-    }
-    
-    .current-card, .new-card {
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 15px;
-        padding: 25px;
-        backdrop-filter: blur(10px);
-        text-align: center;
-    }
-    
-    .current-card {
-        border: 2px solid rgba(220, 53, 69, 0.3);
-    }
-    
-    .new-card {
-        border: 2px solid rgba(40, 167, 69, 0.3);
-    }
-    
-    .arrow-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .change-arrow {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(10px);
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-    
-    .form-control {
-        border-radius: 10px;
-        padding: 15px;
-        border: 2px solid #e9ecef;
-        transition: all 0.3s ease;
-        font-size: 16px;
-        background: rgba(255, 255, 255, 0.9);
-    }
-    
-    .form-control:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        background: white;
-    }
-    
-    .btn-custom {
-        border-radius: 10px;
-        padding: 15px 30px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        font-size: 16px;
-    }
-    
-    .btn-primary-custom {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        border: none;
-        color: white;
-    }
-    
-    .btn-primary-custom:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-        color: white;
-    }
-    
-    .btn-danger-custom {
-        background: linear-gradient(135deg, #dc3545 0%, #c92a2a 100%);
-        border: none;
-        color: white;
-    }
-    
-    .btn-danger-custom:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
-        color: white;
-    }
-    
-    .loading-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 9999;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .loading-content {
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-    
-    .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #667eea;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 15px;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    .warning-box {
-        background: rgba(255, 193, 7, 0.2);
-        border: 2px solid rgba(255, 193, 7, 0.5);
-        border-radius: 15px;
-        padding: 20px;
-        margin: 20px 0;
-        backdrop-filter: blur(10px);
-    }
-    
-    .security-info {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        padding: 20px;
-        margin: 20px 0;
-        backdrop-filter: blur(10px);
-    }
-    
-    .card-preview {
-        background: linear-gradient(135deg, #434343 0%, #000000 100%);
-        border-radius: 15px;
-        padding: 20px;
-        color: white;
-        min-height: 120px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .card-preview::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-        transform: rotate(45deg);
-    }
-    
-    @media (max-width: 768px) {
-        .card-comparison {
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        
-        .arrow-container {
-            transform: rotate(90deg);
-        }
-    }
-</style>
-{% endblock %}
+{% block title %}カード変更 - NAGOYAMESHI{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <!-- パンくずナビ -->
     <nav aria-label="breadcrumb">
-        <ol class="breadcrumb bg-light rounded px-3 py-2">
-            <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}" class="text-decoration-none">🏠 トップ</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'accounts:mypage' %}" class="text-decoration-none">👤 マイページ</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'accounts:card_manage' %}" class="text-decoration-none">💳 カード管理</a></li>
-            <li class="breadcrumb-item active" aria-current="page">🔄 カード変更</li>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:mypage' %}">マイページ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:card_manage' %}">カード管理</a></li>
+            <li class="breadcrumb-item active">カード変更</li>
         </ol>
     </nav>
 
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <!-- メインカード -->
-            <div class="comparison-container">
-                <div class="text-center mb-4">
-                    <h2><i class="fas fa-exchange-alt me-3"></i>カード情報変更</h2>
-                    <p class="mb-0">現在のカードを新しいカードに変更します</p>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>カード情報変更</h4>
                 </div>
-
-                <!-- カード比較セクション -->
-                <div class="card-comparison">
-                    <!-- 現在のカード -->
-                    <div class="current-card">
-                        <h6 class="text-danger mb-3">
-                            <i class="fas fa-credit-card me-2"></i>現在のカード
-                        </h6>
-                        {% if current_payment_method %}
-                        <div class="card-preview mb-3">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    {% if current_payment_method.card.brand == 'visa' %}
-                                        <i class="fab fa-cc-visa fa-2x"></i>
-                                    {% elif current_payment_method.card.brand == 'mastercard' %}
-                                        <i class="fab fa-cc-mastercard fa-2x"></i>
-                                    {% elif current_payment_method.card.brand == 'amex' %}
-                                        <i class="fab fa-cc-amex fa-2x"></i>
-                                    {% elif current_payment_method.card.brand == 'jcb' %}
-                                        <i class="fab fa-cc-jcb fa-2x"></i>
-                                    {% else %}
-                                        <i class="fas fa-credit-card fa-2x"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="text-end">
-                                    <small>有効期限</small><br>
-                                    <strong>{{ current_payment_method.card.exp_month|stringformat:"02d" }}/{{ current_payment_method.card.exp_year }}</strong>
-                                </div>
-                            </div>
-                            <div class="mt-3">
-                                <div class="h6 mb-0">{{ current_payment_method.card.brand|title }} ****{{ current_payment_method.card.last4 }}</div>
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="text-center py-3">
-                            <i class="fas fa-question-circle fa-2x mb-2"></i>
-                            <p class="mb-0">現在のカード情報が見つかりません</p>
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- 矢印 -->
-                    <div class="arrow-container">
-                        <div class="change-arrow">
-                            <i class="fas fa-arrow-right fa-lg"></i>
-                        </div>
-                    </div>
-
-                    <!-- 新しいカード -->
-                    <div class="new-card">
-                        <h6 class="text-success mb-3">
-                            <i class="fas fa-plus-circle me-2"></i>新しいカード
-                        </h6>
-                        <div class="card-preview mb-3">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <i class="fas fa-credit-card fa-2x" id="new-card-brand"></i>
-                                </div>
-                                <div class="text-end">
-                                    <small>有効期限</small><br>
-                                    <strong id="new-card-expiry">--/--</strong>
-                                </div>
-                            </div>
-                            <div class="mt-3">
-                                <div class="h6 mb-0" id="new-card-number">**** **** **** ----</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 警告メッセージ -->
-                <div class="warning-box">
-                    <div class="d-flex align-items-start">
-                        <i class="fas fa-exclamation-triangle fa-lg me-3 mt-1 text-warning"></i>
-                        <div>
-                            <h6 class="text-warning mb-2">重要なお知らせ</h6>
-                            <ul class="small mb-0">
-                                <li>カード変更後、次回の請求から新しいカードが使用されます</li>
-                                <li>現在のカードは自動的に削除されます</li>
-                                <li>進行中の取引には影響しません</li>
-                                <li>変更処理は即座に完了します</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- カードフォーム -->
-                <form id="card-change-form" method="post">
-                    {% csrf_token %}
+                <div class="card-body">
+                    <!-- 現在のカード情報 -->
                     {% if current_payment_method %}
-                    <input type="hidden" name="old_payment_method_id" value="{{ current_payment_method.id }}">
+                    <div class="alert alert-info">
+                        <h6>現在のカード</h6>
+                        <p>{{ current_payment_method.card.brand|title }} ****{{ current_payment_method.card.last4 }}</p>
+                        <p>有効期限: {{ current_payment_method.card.exp_month }}/{{ current_payment_method.card.exp_year }}</p>
+                    </div>
                     {% endif %}
-                    
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-user me-2"></i>カード名義人
-                            </label>
+
+                    <!-- 注意事項 -->
+                    <div class="alert alert-warning">
+                        <strong>注意:</strong>
+                        <ul class="mb-0">
+                            <li>現在のカードは削除されます</li>
+                            <li>新しいカードが即座に有効になります</li>
+                        </ul>
+                    </div>
+
+                    <form id="card-change-form" method="post">
+                        {% csrf_token %}
+                        {% if current_payment_method %}
+                        <input type="hidden" name="old_payment_method_id" value="{{ current_payment_method.id }}">
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">カード名義人</label>
                             <input type="text" 
                                    class="form-control" 
                                    id="card-holder-name" 
                                    placeholder="YAMADA TARO"
                                    required>
-                            <div class="form-text text-white-50 mt-2">
-                                カードに印字されている名前をローマ字で入力してください
+                            <div class="form-text">
+                                カードに書かれた名前をローマ字で入力してください
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-credit-card me-2"></i>新しいカード番号
-                            </label>
+                        <div class="mb-3">
+                            <label class="form-label">新しいカード番号</label>
                             <div id="card-number-element" class="form-control">
-                                <!-- Stripe Elements will create form elements here -->
+                                <!-- Stripe Elements -->
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-calendar me-2"></i>有効期限
-                            </label>
-                            <div id="card-expiry-element" class="form-control">
-                                <!-- Stripe Elements will create form elements here -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">有効期限</label>
+                                <div id="card-expiry-element" class="form-control">
+                                    <!-- Stripe Elements -->
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">セキュリティコード</label>
+                                <div id="card-cvc-element" class="form-control">
+                                    <!-- Stripe Elements -->
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-lock me-2"></i>セキュリティコード
-                            </label>
-                            <div id="card-cvc-element" class="form-control">
-                                <!-- Stripe Elements will create form elements here -->
+
+                        <!-- エラー表示 -->
+                        <div id="card-errors" class="alert alert-danger d-none"></div>
+
+                        <!-- ボタン -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'accounts:card_manage' %}" class="btn btn-secondary">
+                                戻る
+                            </a>
+                            <div>
+                                <button type="button" class="btn btn-warning" onclick="confirmChange()">
+                                    変更内容を確認
+                                </button>
+                                <button type="submit" id="submit-button" class="btn btn-primary" style="display: none;">
+                                    カードを変更
+                                </button>
                             </div>
                         </div>
-                    </div>
+                    </form>
 
-                    <!-- カードエラー表示 -->
-                    <div id="card-errors" role="alert" class="alert alert-danger d-none"></div>
-
-                    <!-- ボタン -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="{% url 'accounts:card_manage' %}" class="btn btn-light btn-custom">
-                            <i class="fas fa-arrow-left me-2"></i>戻る
-                        </a>
-                        <div>
-                            <button type="button" class="btn btn-danger-custom btn-custom me-3" onclick="confirmChange()">
-                                <i class="fas fa-exclamation-triangle me-2"></i>変更内容を確認
-                            </button>
-                            <button type="submit" id="submit-button" class="btn btn-primary-custom btn-custom" style="display: none;">
-                                <i class="fas fa-exchange-alt me-2"></i>カードを変更
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                <!-- セキュリティ情報 -->
-                <div class="security-info mt-4">
-                    <h6><i class="fas fa-shield-alt me-2"></i>セキュリティについて</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <ul class="small mb-0">
-                                <li>全ての通信はSSLで暗号化されています</li>
-                                <li>カード情報はStripeが安全に管理します</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <ul class="small mb-0">
-                                <li>PCI DSS Level 1準拠</li>
-                                <li>24時間365日の不正利用監視</li>
-                            </ul>
-                        </div>
+                    <!-- セキュリティ情報 -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6>セキュリティについて</h6>
+                        <ul class="small mb-0">
+                            <li>全ての通信は暗号化されています</li>
+                            <li>カード情報は安全に管理されます</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -399,79 +112,27 @@
     </div>
 </div>
 
-<!-- ローディングオーバーレイ -->
-<div class="loading-overlay" id="loading-overlay">
-    <div class="loading-content">
-        <div class="spinner"></div>
-        <h5>カード情報を変更中...</h5>
-        <p class="text-muted mb-0">しばらくお待ちください</p>
-    </div>
-</div>
-
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-// Stripe公開キー
+// Stripe設定
 const stripe = Stripe('{{ stripe_public_key }}');
 const elements = stripe.elements();
 
-// カスタムスタイル
-const style = {
-    base: {
-        fontSize: '16px',
-        color: '#424770',
-        '::placeholder': {
-            color: '#aab7c4',
-        },
-        padding: '15px',
-    },
-    invalid: {
-        color: '#9e2146',
-    },
-};
-
-// カード要素を作成
-const cardNumber = elements.create('cardNumber', {style: style});
-const cardExpiry = elements.create('cardExpiry', {style: style});
-const cardCvc = elements.create('cardCvc', {style: style});
+// カード要素作成
+const cardNumber = elements.create('cardNumber');
+const cardExpiry = elements.create('cardExpiry');
+const cardCvc = elements.create('cardCvc');
 
 // 要素をマウント
 cardNumber.mount('#card-number-element');
 cardExpiry.mount('#card-expiry-element');
 cardCvc.mount('#card-cvc-element');
 
-// カード情報の変更を監視してプレビューを更新
-cardNumber.on('change', function(event) {
-    handleCardElementChange(event);
-    if (event.complete) {
-        updateCardPreview();
-    }
-});
-
-cardExpiry.on('change', function(event) {
-    handleCardElementChange(event);
-    if (event.complete) {
-        const expiry = event.value;
-        document.getElementById('new-card-expiry').textContent = expiry || '--/--';
-    }
-});
-
-cardCvc.on('change', handleCardElementChange);
-
-// エラーハンドリング
-function handleCardElementChange(event) {
-    const displayError = document.getElementById('card-errors');
-    if (event.error) {
-        displayError.textContent = event.error.message;
-        displayError.classList.remove('d-none');
-    } else {
-        displayError.classList.add('d-none');
-    }
-}
-
-// カードプレビューの更新
-function updateCardPreview() {
-    // ここでカードブランドを検出して表示を更新
-    // 実際の実装ではStripe Elementsのbrandイベントを使用
+// エラー表示
+function showError(message) {
+    const errorElement = document.getElementById('card-errors');
+    errorElement.textContent = message;
+    errorElement.classList.remove('d-none');
 }
 
 // 変更内容の確認
@@ -483,37 +144,22 @@ function confirmChange() {
         return;
     }
     
-    const confirmMessage = `
-カード情報を変更しますか？
-
-⚠️ 重要な注意事項：
-• 現在のカードは削除されます
-• 新しいカードが即座に有効になります
-• 次回の請求から新しいカードが使用されます
-
-この操作は取り消せません。
-    `;
-    
-    if (confirm(confirmMessage)) {
+    if (confirm('カード情報を変更しますか？\n現在のカードは削除されます。')) {
         document.getElementById('submit-button').style.display = 'inline-block';
         document.querySelector('button[onclick="confirmChange()"]').style.display = 'none';
     }
 }
 
-// フォーム送信処理
-const form = document.getElementById('card-change-form');
-form.addEventListener('submit', async (event) => {
+// フォーム送信
+document.getElementById('card-change-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     
     const submitButton = document.getElementById('submit-button');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    
-    // ローディング表示
     submitButton.disabled = true;
-    loadingOverlay.style.display = 'flex';
+    submitButton.textContent = '処理中...';
     
     try {
-        // PaymentMethodを作成
+        // PaymentMethod作成
         const {paymentMethod, error} = await stripe.createPaymentMethod({
             type: 'card',
             card: cardNumber,
@@ -523,62 +169,32 @@ form.addEventListener('submit', async (event) => {
         });
 
         if (error) {
-            // エラー表示
-            const errorElement = document.getElementById('card-errors');
-            errorElement.textContent = error.message;
-            errorElement.classList.remove('d-none');
-            
+            showError(error.message);
             submitButton.disabled = false;
-            loadingOverlay.style.display = 'none';
+            submitButton.textContent = 'カードを変更';
         } else {
-            // PaymentMethodをサーバーに送信
-            const formData = new FormData(form);
+            // サーバーに送信
+            const formData = new FormData(document.getElementById('card-change-form'));
             formData.append('payment_method_id', paymentMethod.id);
             
-            const response = await fetch(form.action, {
+            const response = await fetch(window.location.href, {
                 method: 'POST',
                 body: formData,
             });
             
             if (response.ok) {
-                // 成功時はカード管理ページにリダイレクト
                 window.location.href = '{% url "accounts:card_manage" %}';
             } else {
-                // サーバーエラー
-                const errorElement = document.getElementById('card-errors');
-                errorElement.textContent = 'カードの変更に失敗しました。もう一度お試しください。';
-                errorElement.classList.remove('d-none');
-                
+                showError('カードの変更に失敗しました');
                 submitButton.disabled = false;
-                loadingOverlay.style.display = 'none';
+                submitButton.textContent = 'カードを変更';
             }
         }
     } catch (err) {
-        console.error('Error:', err);
-        const errorElement = document.getElementById('card-errors');
-        errorElement.textContent = '予期しないエラーが発生しました。';
-        errorElement.classList.remove('d-none');
-        
+        showError('エラーが発生しました');
         submitButton.disabled = false;
-        loadingOverlay.style.display = 'none';
+        submitButton.textContent = 'カードを変更';
     }
-});
-
-// ページロード時のアニメーション
-document.addEventListener('DOMContentLoaded', function() {
-    // カード比較のアニメーション効果
-    const currentCard = document.querySelector('.current-card');
-    const newCard = document.querySelector('.new-card');
-    
-    setTimeout(() => {
-        currentCard.style.transform = 'scale(1.02)';
-        newCard.style.transform = 'scale(1.02)';
-    }, 500);
-    
-    setTimeout(() => {
-        currentCard.style.transform = 'scale(1)';
-        newCard.style.transform = 'scale(1)';
-    }, 1000);
 });
 </script>
 {% endblock %}

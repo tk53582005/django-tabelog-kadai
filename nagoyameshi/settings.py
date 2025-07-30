@@ -16,13 +16,8 @@ from decouple import config
 
 pymysql.install_as_MySQLdb()
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
@@ -32,9 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -44,12 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     
-    # allauth関連
+    # allauth
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     
-    # アプリケーション
+    # アプリ
     'accounts',
     'restaurants',
 ]
@@ -70,7 +63,7 @@ ROOT_URLCONF = 'nagoyameshi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # この行を変更
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,10 +78,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nagoyameshi.wsgi.application'
 
-
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -104,8 +94,6 @@ DATABASES = {
 }
 
 # Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -121,34 +109,23 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGE_CODE = 'ja'
-
 TIME_ZONE = 'Asia/Tokyo'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-# Media files (User uploaded files) - 新規追加
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # カスタムユーザーモデル
@@ -157,7 +134,6 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 # django-allauth設定
 SITE_ID = 1
 
-# 認証バックエンド
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -170,71 +146,28 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
-# ログイン・ログアウト後のリダイレクト
+# リダイレクト設定
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-# メール設定（開発用：コンソール出力）
+# メール設定（開発用）
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# ===== Stripe決済設定 =====
-# Stripe API キー（.envファイルから取得）
+# Stripe設定
 STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY', default='')
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
 STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
-
-# Stripe価格設定（月額サブスクリプション）
 STRIPE_PRICE_ID_PREMIUM = config('STRIPE_PRICE_ID_PREMIUM', default='')
 
-# サブスクリプション設定
+# サブスクリプション設定（簡単な辞書）
 SUBSCRIPTION_SETTINGS = {
     'PREMIUM': {
-        'name': 'プレミアム会員',
-        'price': 300,  # 月額300円
-        'description': '予約・レビュー機能が使い放題',
+        'price': 300,
         'features': [
             'レストラン予約機能',
             'レビュー投稿・編集機能',
             '無制限のお気に入り登録',
             '詳細な検索フィルター',
-            '優先サポート',
         ]
     }
-}
-
-# 決済関連設定
-PAYMENT_SETTINGS = {
-    'CURRENCY': 'jpy',
-    'SUCCESS_URL': 'accounts:payment_success',
-    'CANCEL_URL': 'accounts:payment_cancel',
-    'WEBHOOK_URL': 'accounts:stripe_webhook',
-}
-
-# ログ設定（Stripe関連のデバッグ用）
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'stripe.log',
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'stripe': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'restaurants': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-    },
 }

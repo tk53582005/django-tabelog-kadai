@@ -1,384 +1,133 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
 
-{% block title %}新しいカードを追加 - NAGOYAMESHI{% endblock %}
-
-{% block extra_css %}
-<style>
-    .card-form-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        padding: 40px;
-        color: white;
-        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
-    }
-    
-    .form-control {
-        border-radius: 10px;
-        padding: 15px;
-        border: 2px solid #e9ecef;
-        transition: all 0.3s ease;
-        font-size: 16px;
-    }
-    
-    .form-control:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    }
-    
-    .btn-custom {
-        border-radius: 10px;
-        padding: 15px 30px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        font-size: 16px;
-    }
-    
-    .btn-primary-custom {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        border: none;
-        color: white;
-    }
-    
-    .btn-primary-custom:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-        color: white;
-    }
-    
-    .security-badges {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin: 20px 0;
-    }
-    
-    .security-badge {
-        background: rgba(255, 255, 255, 0.15);
-        padding: 10px 15px;
-        border-radius: 10px;
-        backdrop-filter: blur(10px);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-    }
-    
-    .card-brands {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin: 20px 0;
-    }
-    
-    .card-brand {
-        background: rgba(255, 255, 255, 0.1);
-        padding: 10px 15px;
-        border-radius: 8px;
-        backdrop-filter: blur(10px);
-    }
-    
-    .loading-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 9999;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .loading-content {
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-    
-    .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #667eea;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 15px;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    .step-indicator {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 30px;
-    }
-    
-    .step {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 10px;
-        position: relative;
-    }
-    
-    .step.active {
-        background: rgba(255, 255, 255, 0.9);
-        color: #667eea;
-    }
-    
-    .step::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 100%;
-        width: 20px;
-        height: 2px;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-50%);
-    }
-    
-    .step:last-child::after {
-        display: none;
-    }
-</style>
-{% endblock %}
+{% block title %}カード追加 - NAGOYAMESHI{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <!-- パンくずナビ -->
     <nav aria-label="breadcrumb">
-        <ol class="breadcrumb bg-light rounded px-3 py-2">
-            <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}" class="text-decoration-none">🏠 トップ</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'accounts:mypage' %}" class="text-decoration-none">👤 マイページ</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'accounts:card_manage' %}" class="text-decoration-none">💳 カード管理</a></li>
-            <li class="breadcrumb-item active" aria-current="page">➕ カード追加</li>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:mypage' %}">マイページ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:card_manage' %}">カード管理</a></li>
+            <li class="breadcrumb-item active">カード追加</li>
         </ol>
     </nav>
 
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- メインカード -->
-            <div class="card-form-container">
-                <!-- ステップインジケーター -->
-                <div class="step-indicator">
-                    <div class="step active">
-                        <i class="fas fa-credit-card"></i>
-                    </div>
-                    <div class="step">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div class="step">
-                        <i class="fas fa-check"></i>
-                    </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>新しいカードを追加</h4>
                 </div>
-                
-                <div class="text-center mb-4">
-                    <h2><i class="fas fa-plus-circle me-3"></i>新しいカードを追加</h2>
-                    <p class="mb-0">安全なSSL暗号化でカード情報を保護します</p>
-                </div>
-
-                <!-- セキュリティバッジ -->
-                <div class="security-badges">
-                    <div class="security-badge">
-                        <i class="fas fa-lock"></i>
-                        <span>SSL暗号化</span>
-                    </div>
-                    <div class="security-badge">
-                        <i class="fab fa-stripe"></i>
-                        <span>Stripe認証</span>
-                    </div>
-                    <div class="security-badge">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>PCI準拠</span>
-                    </div>
-                </div>
-
-                <!-- 対応カードブランド -->
-                <div class="card-brands">
-                    <div class="card-brand">
-                        <i class="fab fa-cc-visa fa-lg"></i>
-                    </div>
-                    <div class="card-brand">
-                        <i class="fab fa-cc-mastercard fa-lg"></i>
-                    </div>
-                    <div class="card-brand">
-                        <i class="fab fa-cc-amex fa-lg"></i>
-                    </div>
-                    <div class="card-brand">
-                        <i class="fab fa-cc-jcb fa-lg"></i>
-                    </div>
-                </div>
-
-                <!-- カードフォーム -->
-                <form id="card-form" method="post">
-                    {% csrf_token %}
-                    
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-user me-2"></i>カード名義人
-                            </label>
+                <div class="card-body">
+                    <form id="card-form" method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">カード名義人</label>
                             <input type="text" 
                                    class="form-control" 
                                    id="card-holder-name" 
                                    placeholder="YAMADA TARO"
                                    required>
-                            <div class="form-text text-white-50 mt-2">
-                                カードに印字されている名前をローマ字で入力してください
+                            <div class="form-text">
+                                カードに書かれた名前をローマ字で入力してください
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-credit-card me-2"></i>カード番号
-                            </label>
+                        <div class="mb-3">
+                            <label class="form-label">カード番号</label>
                             <div id="card-number-element" class="form-control">
-                                <!-- Stripe Elements will create form elements here -->
+                                <!-- Stripe Elements -->
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-calendar me-2"></i>有効期限
-                            </label>
-                            <div id="card-expiry-element" class="form-control">
-                                <!-- Stripe Elements will create form elements here -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">有効期限</label>
+                                <div id="card-expiry-element" class="form-control">
+                                    <!-- Stripe Elements -->
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">セキュリティコード</label>
+                                <div id="card-cvc-element" class="form-control">
+                                    <!-- Stripe Elements -->
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-lock me-2"></i>セキュリティコード
-                            </label>
-                            <div id="card-cvc-element" class="form-control">
-                                <!-- Stripe Elements will create form elements here -->
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="row mb-4">
-                        <div class="col-12">
+                        <div class="mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="set-default" checked>
-                                <label class="form-check-label fw-bold" for="set-default">
-                                    <i class="fas fa-star me-2"></i>このカードをメインの支払い方法に設定する
+                                <label class="form-check-label" for="set-default">
+                                    メインの支払い方法に設定する
                                 </label>
                             </div>
                         </div>
+
+                        <!-- エラー表示 -->
+                        <div id="card-errors" class="alert alert-danger d-none"></div>
+
+                        <!-- ボタン -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'accounts:card_manage' %}" class="btn btn-secondary">
+                                戻る
+                            </a>
+                            <button type="submit" id="submit-button" class="btn btn-primary">
+                                カードを追加
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- 注意事項 -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6>ご注意</h6>
+                        <ul class="small mb-0">
+                            <li>カード情報は安全に暗号化されます</li>
+                            <li>月額料金が自動で請求されます</li>
+                        </ul>
                     </div>
-
-                    <!-- カードエラー表示 -->
-                    <div id="card-errors" role="alert" class="alert alert-danger d-none"></div>
-
-                    <!-- ボタン -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="{% url 'accounts:card_manage' %}" class="btn btn-light btn-custom">
-                            <i class="fas fa-arrow-left me-2"></i>戻る
-                        </a>
-                        <button type="submit" id="submit-button" class="btn btn-primary-custom btn-custom">
-                            <i class="fas fa-plus me-2"></i>カードを追加
-                        </button>
-                    </div>
-                </form>
-
-                <!-- 注意事項 -->
-                <div class="mt-4 p-3 rounded" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
-                    <h6><i class="fas fa-info-circle me-2"></i>ご利用について</h6>
-                    <ul class="small mb-0">
-                        <li>カード情報はStripeによって安全に暗号化されます</li>
-                        <li>当サイトではカード番号を保存しません</li>
-                        <li>追加されたカードは即座に利用可能になります</li>
-                        <li>月額料金は毎月自動的に請求されます</li>
-                    </ul>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ローディングオーバーレイ -->
-<div class="loading-overlay" id="loading-overlay">
-    <div class="loading-content">
-        <div class="spinner"></div>
-        <h5>カード情報を登録中...</h5>
-        <p class="text-muted mb-0">しばらくお待ちください</p>
-    </div>
-</div>
-
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-// Stripe公開キー
+// Stripe設定
 const stripe = Stripe('{{ stripe_public_key }}');
 const elements = stripe.elements();
 
-// カスタムスタイル
-const style = {
-    base: {
-        fontSize: '16px',
-        color: '#424770',
-        '::placeholder': {
-            color: '#aab7c4',
-        },
-        padding: '15px',
-    },
-    invalid: {
-        color: '#9e2146',
-    },
-};
-
-// カード要素を作成
-const cardNumber = elements.create('cardNumber', {style: style});
-const cardExpiry = elements.create('cardExpiry', {style: style});
-const cardCvc = elements.create('cardCvc', {style: style});
+// カード要素作成
+const cardNumber = elements.create('cardNumber');
+const cardExpiry = elements.create('cardExpiry');
+const cardCvc = elements.create('cardCvc');
 
 // 要素をマウント
 cardNumber.mount('#card-number-element');
 cardExpiry.mount('#card-expiry-element');
 cardCvc.mount('#card-cvc-element');
 
-// エラーハンドリング
-function handleCardElementChange(event) {
-    const displayError = document.getElementById('card-errors');
-    if (event.error) {
-        displayError.textContent = event.error.message;
-        displayError.classList.remove('d-none');
-    } else {
-        displayError.classList.add('d-none');
-    }
+// エラー表示
+function showError(message) {
+    const errorElement = document.getElementById('card-errors');
+    errorElement.textContent = message;
+    errorElement.classList.remove('d-none');
 }
 
-cardNumber.on('change', handleCardElementChange);
-cardExpiry.on('change', handleCardElementChange);
-cardCvc.on('change', handleCardElementChange);
-
-// フォーム送信処理
-const form = document.getElementById('card-form');
-form.addEventListener('submit', async (event) => {
+// フォーム送信
+document.getElementById('card-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     
     const submitButton = document.getElementById('submit-button');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    
-    // ローディング表示
     submitButton.disabled = true;
-    loadingOverlay.style.display = 'flex';
+    submitButton.textContent = '処理中...';
     
     try {
-        // PaymentMethodを作成
+        // PaymentMethod作成
         const {paymentMethod, error} = await stripe.createPaymentMethod({
             type: 'card',
             card: cardNumber,
@@ -388,58 +137,33 @@ form.addEventListener('submit', async (event) => {
         });
 
         if (error) {
-            // エラー表示
-            const errorElement = document.getElementById('card-errors');
-            errorElement.textContent = error.message;
-            errorElement.classList.remove('d-none');
-            
+            showError(error.message);
             submitButton.disabled = false;
-            loadingOverlay.style.display = 'none';
+            submitButton.textContent = 'カードを追加';
         } else {
-            // PaymentMethodをサーバーに送信
-            const formData = new FormData(form);
+            // サーバーに送信
+            const formData = new FormData(document.getElementById('card-form'));
             formData.append('payment_method_id', paymentMethod.id);
             formData.append('set_default', document.getElementById('set-default').checked);
             
-            const response = await fetch(form.action, {
+            const response = await fetch(window.location.href, {
                 method: 'POST',
                 body: formData,
             });
             
             if (response.ok) {
-                // 成功時はカード管理ページにリダイレクト
                 window.location.href = '{% url "accounts:card_manage" %}';
             } else {
-                // サーバーエラー
-                const errorElement = document.getElementById('card-errors');
-                errorElement.textContent = 'カードの追加に失敗しました。もう一度お試しください。';
-                errorElement.classList.remove('d-none');
-                
+                showError('カードの追加に失敗しました');
                 submitButton.disabled = false;
-                loadingOverlay.style.display = 'none';
+                submitButton.textContent = 'カードを追加';
             }
         }
     } catch (err) {
-        console.error('Error:', err);
-        const errorElement = document.getElementById('card-errors');
-        errorElement.textContent = '予期しないエラーが発生しました。';
-        errorElement.classList.remove('d-none');
-        
+        showError('エラーが発生しました');
         submitButton.disabled = false;
-        loadingOverlay.style.display = 'none';
+        submitButton.textContent = 'カードを追加';
     }
-});
-
-// アニメーション効果
-document.addEventListener('DOMContentLoaded', function() {
-    // ステップインジケーターのアニメーション
-    setTimeout(() => {
-        document.querySelectorAll('.step')[1].classList.add('active');
-    }, 1000);
-    
-    setTimeout(() => {
-        document.querySelectorAll('.step')[2].classList.add('active');
-    }, 2000);
 });
 </script>
 {% endblock %}
