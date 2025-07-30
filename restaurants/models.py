@@ -20,11 +20,10 @@ class Category(models.Model):
 class Restaurant(models.Model):
     """店舗モデル"""
     name = models.CharField('店舗名', max_length=100)
-    description = models.TextField('説明')
+    description = models.TextField('説明', blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='カテゴリ')
     
     # 住所・連絡先
-    postal_code = models.CharField('郵便番号', max_length=8)
     address = models.CharField('住所', max_length=200)
     phone_number = models.CharField('電話番号', max_length=15)
     
@@ -66,6 +65,10 @@ class Review(models.Model):
     )
     comment = models.TextField('コメント')
     
+    # 追加フィールド
+    is_approved = models.BooleanField('承認済み', default=True)
+    helpful_count = models.PositiveIntegerField('役に立った数', default=0)
+    
     created_at = models.DateTimeField('作成日時', auto_now_add=True)
     updated_at = models.DateTimeField('更新日時', auto_now=True)
     
@@ -73,9 +76,14 @@ class Review(models.Model):
         verbose_name = 'レビュー'
         verbose_name_plural = 'レビュー'
         unique_together = ['user', 'restaurant']  # 1人1店舗1レビュー
+        ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.restaurant.name} - {self.user.get_full_name()}"
+        return f"{self.restaurant.name} - {self.user.email} ({self.rating}★)"
+    
+    def get_star_display(self):
+        """星の表示用"""
+        return '★' * self.rating + '☆' * (5 - self.rating)
 
 class Reservation(models.Model):
     """予約モデル"""
@@ -115,4 +123,4 @@ class Favorite(models.Model):
         unique_together = ['user', 'restaurant']  # 重複防止
     
     def __str__(self):
-        return f"{self.user.get_full_name()} - {self.restaurant.name}"
+        return f"{self.user.email} - {self.restaurant.name}"

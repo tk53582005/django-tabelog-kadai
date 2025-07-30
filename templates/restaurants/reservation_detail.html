@@ -1,0 +1,134 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}予約詳細 - NAGOYAMESHI{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- パンくずナビ -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'restaurants:reservation_list' %}">予約一覧</a></li>
+            <li class="breadcrumb-item active" aria-current="page">予約詳細</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- 予約完了メッセージ -->
+            <div class="alert alert-success text-center mb-4">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h4>予約が完了しました！</h4>
+                <p class="mb-0">予約内容をご確認ください</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-calendar-check"></i> 予約詳細
+                        {% if reservation.status == 'confirmed' %}
+                            <span class="badge bg-light text-success ms-2">予約確定</span>
+                        {% elif reservation.status == 'cancelled' %}
+                            <span class="badge bg-light text-danger ms-2">キャンセル済み</span>
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- 店舗情報 -->
+                    <div class="mb-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            {% if reservation.restaurant.image %}
+                            <img src="{{ reservation.restaurant.image.url }}" class="rounded me-3" width="80" height="80" style="object-fit: cover;">
+                            {% else %}
+                            <div class="bg-secondary rounded me-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-image text-white"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="mb-1">
+                                    <a href="{% url 'restaurants:detail' reservation.restaurant.pk %}" class="text-decoration-none">
+                                        {{ reservation.restaurant.name }}
+                                    </a>
+                                </h5>
+                                <span class="badge bg-primary">{{ reservation.restaurant.category.name }}</span>
+                                <p class="text-muted mb-0 mt-1">
+                                    <i class="fas fa-map-marker-alt"></i> {{ reservation.restaurant.address }}
+                                </p>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-phone"></i> {{ reservation.restaurant.phone_number|default:"店舗にお問い合わせください" }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 予約詳細情報 -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold"><i class="fas fa-calendar text-primary"></i> 予約日</td>
+                                    <td>{{ reservation.reservation_date|date:"Y年m月d日 (D)" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold"><i class="fas fa-clock text-primary"></i> 予約時間</td>
+                                    <td>{{ reservation.reservation_time|time:"H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold"><i class="fas fa-users text-primary"></i> 人数</td>
+                                    <td>{{ reservation.number_of_people }}名</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold"><i class="fas fa-info-circle text-primary"></i> ステータス</td>
+                                    <td>
+                                        {% if reservation.status == 'confirmed' %}
+                                            <span class="badge bg-success">予約確定</span>
+                                        {% elif reservation.status == 'cancelled' %}
+                                            <span class="badge bg-danger">キャンセル済み</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold"><i class="fas fa-calendar-plus text-primary"></i> 予約日時</td>
+                                    <td>{{ reservation.created_at|date:"Y/m/d H:i" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 注意事項 -->
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-exclamation-circle"></i> ご来店時の注意事項</h6>
+                        <ul class="mb-0 small">
+                            <li>予約時間の15分前にはご来店をお願いします</li>
+                            <li>遅れる場合は必ず店舗までご連絡ください</li>
+                            <li>当日の人数変更は店舗にご連絡ください</li>
+                        </ul>
+                    </div>
+
+                    <!-- アクションボタン -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'restaurants:reservation_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-list"></i> 予約一覧に戻る
+                        </a>
+                        <div>
+                            <a href="{% url 'restaurants:detail' reservation.restaurant.pk %}" class="btn btn-primary me-2">
+                                <i class="fas fa-store"></i> 店舗詳細
+                            </a>
+                            {% if reservation.status == 'confirmed' %}
+                            <a href="{% url 'restaurants:reservation_cancel' reservation.pk %}" class="btn btn-warning">
+                                <i class="fas fa-times"></i> キャンセル
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

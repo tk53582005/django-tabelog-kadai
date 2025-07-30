@@ -1,6 +1,5 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
-
 {% block title %}{{ restaurant.name }} - NAGOYAMESHI{% endblock %}
 
 {% block content %}
@@ -9,8 +8,12 @@
     <!-- パンくずナビ -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ restaurant.name }}</li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'restaurants:index' %}">トップ</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ restaurant.name }}
+            </li>
         </ol>
     </nav>
 
@@ -25,7 +28,7 @@
                     <i class="fas fa-image fa-3x text-muted"></i>
                 </div>
                 {% endif %}
-                
+
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
@@ -51,14 +54,14 @@
                             <div class="me-3">
                                 {% for i in "12345" %}
                                     {% if avg_score >= i|add:0 %}
-                                        <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
                                     {% elif avg_score >= i|add:"-0.5" %}
-                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                    <i class="fas fa-star-half-alt text-warning"></i>
                                     {% else %}
-                                        <i class="far fa-star text-warning"></i>
+                                    <i class="far fa-star text-warning"></i>
                                     {% endif %}
                                 {% endfor %}
-                                <span class="ms-2 h5 mb-0">{{ avg_score }}</span>
+                                <span class="ms-2 h5 mb-0">{{ avg_score|floatformat:1 }}</span>
                             </div>
                             <small class="text-muted">({{ review_count }}件のレビュー)</small>
                         </div>
@@ -75,36 +78,44 @@
             <!-- 店舗情報 -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> 店舗情報</h5>
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> 店舗情報
+                    </h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless table-sm">
                         <tr>
-                            <td><i class="fas fa-map-marker-alt text-primary"></i> 住所</td>
+                            <td style="width: 35%; white-space: nowrap;"><i class="fas fa-map-marker-alt text-primary"></i> 住所</td>
                             <td>{{ restaurant.address }}</td>
                         </tr>
                         <tr>
-                            <td><i class="fas fa-phone text-primary"></i> 電話番号</td>
+                            <td style="width: 35%; white-space: nowrap;"><i class="fas fa-phone text-primary"></i> 電話番号</td>
                             <td>{{ restaurant.phone_number|default:"--" }}</td>
                         </tr>
                         <tr>
-                            <td><i class="fas fa-clock text-primary"></i> 営業時間</td>
-                            <td>{{ restaurant.opening_hours|default:"--" }}</td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-calendar-times text-primary"></i> 定休日</td>
-                            <td>{{ restaurant.closed_days|default:"--" }}</td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-yen-sign text-primary"></i> 価格帯</td>
+                            <td style="width: 35%; white-space: nowrap;"><i class="fas fa-clock text-primary"></i> 営業時間</td>
                             <td>
-                                {% if restaurant.min_price and restaurant.max_price %}
-                                ¥{{ restaurant.min_price|floatformat:0 }} - ¥{{ restaurant.max_price|floatformat:0 }}
+                                {% if restaurant.opening_time and restaurant.closing_time %}
+                                {{ restaurant.opening_time|time:"H:i" }} - {{ restaurant.closing_time|time:"H:i" }}
                                 {% else %}
                                 --
                                 {% endif %}
                             </td>
                         </tr>
+                        <tr>
+                            <td style="width: 35%; white-space: nowrap;"><i class="fas fa-calendar-times text-primary"></i> 定休日</td>
+                            <td>{{ restaurant.regular_holiday|default:"--" }}</td>
+                        </tr>
+                        {% if restaurant.website_url %}
+                        <tr>
+                            <td style="width: 35%; white-space: nowrap;"><i class="fas fa-globe text-primary"></i> ウェブサイト</td>
+                            <td>
+                                <a href="{{ restaurant.website_url }}" target="_blank" class="text-decoration-none">
+                                    <i class="fas fa-external-link-alt"></i> 公式サイト
+                                </a>
+                            </td>
+                        </tr>
+                        {% endif %}
                     </table>
                 </div>
             </div>
@@ -114,9 +125,9 @@
             <div class="card mb-4">
                 <div class="card-body text-center">
                     {% if user.is_premium %}
-                    <button class="btn btn-success btn-lg w-100">
+                    <a href="{% url 'restaurants:reservation_create' restaurant.pk %}" class="btn btn-success btn-lg w-100">
                         <i class="fas fa-calendar-check"></i> 予約する
-                    </button>
+                    </a>
                     {% else %}
                     <div class="text-center">
                         <p class="text-muted mb-2">予約機能は有料会員限定です</p>
@@ -136,11 +147,24 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0"><i class="fas fa-comments"></i> レビュー ({{ review_count }}件)</h5>
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-comments"></i> レビュー ({{ review_count }}件)
+                    </h5>
                     {% if user.is_authenticated and user.is_premium %}
-                    <button class="btn btn-primary btn-sm">
-                        <i class="fas fa-edit"></i> レビューを書く
-                    </button>
+                        {% if not user_review %}
+                        <a href="{% url 'restaurants:review_create' restaurant.pk %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit"></i> レビューを書く
+                        </a>
+                        {% else %}
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'restaurants:review_edit' user_review.pk %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-edit"></i> 編集
+                            </a>
+                            <a href="{% url 'restaurants:review_delete' user_review.pk %}" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-trash"></i> 削除
+                            </a>
+                        </div>
+                        {% endif %}
                     {% endif %}
                 </div>
                 <div class="card-body">
@@ -152,23 +176,41 @@
                                     <strong>{{ review.user.first_name|default:review.user.email }}</strong>
                                     <div class="mt-1">
                                         {% for i in "12345" %}
-                                    {% if review.rating >= i|add:0 %}
-                                                <i class="fas fa-star text-warning"></i>
+                                            {% if review.rating >= i|add:0 %}
+                                            <i class="fas fa-star text-warning"></i>
                                             {% else %}
-                                                <i class="far fa-star text-warning"></i>
+                                            <i class="far fa-star text-warning"></i>
                                             {% endif %}
                                         {% endfor %}
+                                        <span class="ms-1 text-muted small">{{ review.rating }}/5</span>
                                     </div>
                                 </div>
                                 <small class="text-muted">{{ review.created_at|date:"Y年m月d日" }}</small>
                             </div>
                             <p class="mb-0">{{ review.comment|linebreaks }}</p>
+                            
+                            <!-- ユーザー自身のレビューの場合、編集・削除ボタンを表示 -->
+                            {% if user.is_authenticated and review.user == user %}
+                            <div class="mt-2">
+                                <a href="{% url 'restaurants:review_edit' review.pk %}" class="btn btn-sm btn-outline-secondary me-2">
+                                    <i class="fas fa-edit"></i> 編集
+                                </a>
+                                <a href="{% url 'restaurants:review_delete' review.pk %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> 削除
+                                </a>
+                            </div>
+                            {% endif %}
                         </div>
                         {% endfor %}
                     {% else %}
                         <div class="text-center text-muted py-4">
                             <i class="fas fa-comment-slash fa-2x mb-2"></i>
                             <p>まだレビューがありません</p>
+                            {% if user.is_authenticated and user.is_premium %}
+                            <a href="{% url 'restaurants:review_create' restaurant.pk %}" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> 最初のレビューを書く
+                            </a>
+                            {% endif %}
                         </div>
                     {% endif %}
                 </div>
@@ -186,8 +228,8 @@ document.addEventListener('DOMContentLoaded', function() {
         favoriteBtn.addEventListener('click', function() {
             const restaurantId = this.dataset.restaurantId;
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            
-            fetch(`/favorite/toggle/${restaurantId}/`, {
+
+            fetch(`{% url 'restaurants:toggle_favorite' 0 %}`.replace('0', restaurantId), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -206,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.classList.remove('btn-danger');
                     this.classList.add('btn-outline-danger');
                 }
-                
+
                 // 成功メッセージを表示
                 showMessage(data.message, 'success');
             })
@@ -226,11 +268,11 @@ function showMessage(message, type) {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
+
     // メッセージをページ上部に表示
     const container = document.querySelector('.container');
     container.insertBefore(alertDiv, container.firstChild);
-    
+
     // 3秒後に自動で消去
     setTimeout(() => {
         alertDiv.remove();

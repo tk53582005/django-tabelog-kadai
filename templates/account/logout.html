@@ -1,0 +1,420 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}ログアウト - NAGOYAMESHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .logout-container {
+        min-height: 80vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+    
+    .logout-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2.5rem 2rem;
+        border: none;
+    }
+    
+    .logout-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+    }
+    
+    .card-header h2 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.75rem;
+    }
+    
+    .card-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+    
+    .card-body {
+        padding: 2.5rem;
+    }
+    
+    .logout-message {
+        color: #495057;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+    
+    .logout-features {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        color: #495057;
+    }
+    
+    .feature-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .feature-item i {
+        color: #28a745;
+        margin-right: 1rem;
+        font-size: 1.1rem;
+        width: 20px;
+        text-align: center;
+    }
+    
+    .btn-logout {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 14px 28px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: white;
+        transition: all 0.3s ease;
+        margin-right: 1rem;
+        min-width: 140px;
+    }
+    
+    .btn-logout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        color: white;
+    }
+    
+    .btn-cancel {
+        background: #6c757d;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 28px;
+        font-weight: 500;
+        color: white;
+        transition: all 0.3s ease;
+        min-width: 120px;
+    }
+    
+    .btn-cancel:hover {
+        background: #5a6268;
+        transform: translateY(-1px);
+        color: white;
+    }
+    
+    .security-info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border-left: 4px solid #2196f3;
+    }
+    
+    .security-info h6 {
+        color: #1976d2;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .security-info h6 i {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .security-tips {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .security-tips li {
+        color: #424242;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: flex-start;
+        padding: 0.5rem;
+        border-radius: 8px;
+        transition: background 0.3s ease;
+    }
+    
+    .security-tips li:hover {
+        background: rgba(33, 150, 243, 0.05);
+    }
+    
+    .security-tips li::before {
+        content: '🔒';
+        margin-right: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .user-info {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+    }
+    
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 1.5rem;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .user-email {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .stats-row {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #667eea;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    
+    @media (max-width: 768px) {
+        .logout-container {
+            padding: 1rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .btn-logout,
+        .btn-cancel {
+            display: block;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+        
+        .logout-card {
+            margin: 0 1rem;
+        }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.6s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { 
+            opacity: 0; 
+            transform: translateY(20px) scale(0.95); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+        }
+    }
+    
+    .bounce-in {
+        animation: bounceIn 0.8s ease-in-out;
+    }
+    
+    @keyframes bounceIn {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); }
+        70% { transform: scale(0.9); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logout-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="logout-card fade-in">
+                    <div class="card-header">
+                        <div class="logout-icon bounce-in">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </div>
+                        <h2>ログアウトしますか？</h2>
+                        <p>アカウントからサインアウトします</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- ユーザー情報 -->
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                {% if user.first_name %}
+                                    {{ user.first_name|first|upper }}
+                                {% else %}
+                                    <i class="fas fa-user"></i>
+                                {% endif %}
+                            </div>
+                            <div class="user-name">
+                                {% if user.first_name %}
+                                    {{ user.first_name }}さん
+                                {% else %}
+                                    ユーザー
+                                {% endif %}
+                                {% if user.is_premium %}
+                                    <i class="fas fa-crown text-warning ms-1"></i>
+                                {% endif %}
+                            </div>
+                            <div class="user-email">{{ user.email }}</div>
+                            
+                            <!-- 統計情報（オプション） -->
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <span class="stat-number">{{ user.date_joined|date:"Y年m月" }}</span>
+                                    <div class="stat-label">登録日</div>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">
+                                        {% if user.is_premium %}プレミアム{% else %}一般{% endif %}
+                                    </span>
+                                    <div class="stat-label">会員種別</div>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">{{ user.last_login|date:"m/d" }}</span>
+                                    <div class="stat-label">最終ログイン</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="logout-message">
+                            ログアウトすると、このデバイスでの自動ログインが解除されます。再度ご利用いただく際は、ログインが必要になります。
+                        </div>
+                        
+                        <!-- ログアウト時の注意事項 -->
+                        <div class="logout-features">
+                            <div class="feature-item">
+                                <i class="fas fa-check"></i>
+                                <span>アカウント情報は安全に保存されます</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check"></i>
+                                <span>予約情報やお気に入りは維持されます</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check"></i>
+                                <span>いつでも再ログインできます</span>
+                            </div>
+                        </div>
+                        
+                        <!-- ログアウトフォーム -->
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="d-flex justify-content-center">
+                                <button type="submit" class="btn btn-logout">
+                                    <i class="fas fa-sign-out-alt me-2"></i>ログアウト
+                                </button>
+                                <a href="{% url 'restaurants:index' %}" class="btn btn-cancel">
+                                    <i class="fas fa-arrow-left me-2"></i>キャンセル
+                                </a>
+                            </div>
+                        </form>
+                        
+                        <!-- セキュリティ情報 -->
+                        <div class="security-info">
+                            <h6><i class="fas fa-shield-alt"></i>セキュリティのヒント</h6>
+                            <ul class="security-tips">
+                                <li>共用のコンピュータでは必ずログアウトしてください</li>
+                                <li>パスワードは定期的に変更することをお勧めします</li>
+                                <li>怪しいログイン通知があった場合はお知らせください</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ページが読み込まれた時のアニメーション
+    const card = document.querySelector('.logout-card');
+    const icon = document.querySelector('.logout-icon');
+    
+    // アイコンにホバーエフェクト
+    if (icon) {
+        icon.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1) rotate(10deg)';
+        });
+        
+        icon.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    }
+    
+    // ログアウトボタンのクリック確認
+    const logoutBtn = document.querySelector('.btn-logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            // 少し間を置いてからsubmit（アニメーション用）
+            e.preventDefault();
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>ログアウト中...';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                this.closest('form').submit();
+            }, 800);
+        });
+    }
+});
+</script>
+{% endblock %}

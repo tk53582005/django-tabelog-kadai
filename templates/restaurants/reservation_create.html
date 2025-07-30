@@ -1,0 +1,130 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}予約 - {{ restaurant.name }} - NAGOYAMESHI{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- パンくずナビ -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'restaurants:detail' restaurant.pk %}">{{ restaurant.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">予約</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-calendar-check"></i> 予約
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- 店舗情報表示 -->
+                    <div class="mb-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            {% if restaurant.image %}
+                            <img src="{{ restaurant.image.url }}" class="rounded me-3" width="80" height="80" style="object-fit: cover;">
+                            {% else %}
+                            <div class="bg-secondary rounded me-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-image text-white"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="mb-1">{{ restaurant.name }}</h5>
+                                <span class="badge bg-primary">{{ restaurant.category.name }}</span>
+                                <p class="text-muted mb-0 mt-1">
+                                    <i class="fas fa-map-marker-alt"></i> {{ restaurant.address }}
+                                </p>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-clock"></i> 営業時間: {{ restaurant.opening_time|default:"18:00" }} - {{ restaurant.closing_time|default:"21:00" }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 予約フォーム -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- エラーメッセージ -->
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <!-- 予約日 -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.reservation_date.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.reservation_date.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.reservation_date }}
+                                {% if form.reservation_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.reservation_date.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">本日から3ヶ月先まで予約可能</small>
+                            </div>
+
+                            <!-- 予約時間 -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.reservation_time.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.reservation_time.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.reservation_time }}
+                                {% if form.reservation_time.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.reservation_time.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">営業時間: 18:00〜21:00（最終受付）</small>
+                            </div>
+                        </div>
+
+                        <!-- 人数 -->
+                        <div class="mb-4">
+                            <label for="{{ form.number_of_people.id_for_label }}" class="form-label fw-bold">
+                                {{ form.number_of_people.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.number_of_people }}
+                            {% if form.number_of_people.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.number_of_people.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">1〜10名まで予約可能</small>
+                        </div>
+
+                        <!-- 予約注意事項 -->
+                        <div class="alert alert-info mb-4">
+                            <h6><i class="fas fa-info-circle"></i> 予約についての注意事項</h6>
+                            <ul class="mb-0 small">
+                                <li>予約時間の15分前にはご来店をお願いします</li>
+                                <li>キャンセルは予約日の前日まで可能です</li>
+                                <li>無断キャンセルの場合、今後のご予約をお断りする場合があります</li>
+                                <li>お席の確保は予約時間から30分間とさせていただきます</li>
+                            </ul>
+                        </div>
+
+                        <!-- ボタン -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'restaurants:detail' restaurant.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> 戻る
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-calendar-check"></i> 予約を確定する
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,389 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}プレミアム会員プラン - NAGOYAMESHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pricing-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .pricing-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    .pricing-card.premium {
+        border: 3px solid #007bff;
+        background: linear-gradient(135deg, #f8f9ff 0%, #fff5f5 100%);
+    }
+
+    .pricing-card.premium::before {
+        content: '推奨';
+        position: absolute;
+        top: 20px;
+        right: -30px;
+        background: #007bff;
+        color: white;
+        padding: 8px 40px;
+        font-size: 12px;
+        font-weight: bold;
+        transform: rotate(45deg);
+        z-index: 10;
+    }
+
+    .price-display {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #007bff;
+        line-height: 1;
+    }
+
+    .price-period {
+        font-size: 1rem;
+        color: #6c757d;
+        font-weight: normal;
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .feature-list li {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .feature-list li:last-child {
+        border-bottom: none;
+    }
+
+    .feature-list li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: #28a745;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .btn-premium {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+    }
+
+    .btn-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.6);
+        color: white;
+    }
+
+    .subscription-status {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 60px 0;
+        margin-bottom: 50px;
+    }
+
+    .comparison-table {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-top: 50px;
+        overflow: hidden;
+    }
+
+    .comparison-table th {
+        background: #f8f9fa;
+        border: none;
+        padding: 20px;
+        font-weight: 600;
+    }
+
+    .comparison-table td {
+        border: none;
+        padding: 15px 20px;
+        vertical-align: middle;
+    }
+
+    .check-icon {
+        color: #28a745;
+        font-size: 18px;
+    }
+
+    .cross-icon {
+        color: #dc3545;
+        font-size: 18px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ヒーローセクション -->
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="fas fa-crown me-3"></i>プレミアム会員
+        </h1>
+        <p class="lead mb-0">
+            より充実したレストラン体験をお楽しみください
+        </p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 既にプレミアム会員の場合 -->
+    {% if user.is_premium %}
+    <div class="subscription-status">
+        <h3><i class="fas fa-crown me-2"></i>プレミアム会員として登録済み</h3>
+        <p class="mb-3">ありがとうございます！すべての機能をご利用いただけます。</p>
+        {% if current_subscription %}
+        <p class="mb-0">
+            次回更新日: {{ current_subscription.current_period_end|date:"Y年m月d日" }}
+            （あと{{ current_subscription.days_until_renewal }}日）
+        </p>
+        {% endif %}
+        <div class="mt-3">
+            <a href="{% url 'accounts:subscription_manage' %}" class="btn btn-light me-2">
+                <i class="fas fa-cog me-1"></i>サブスクリプション管理
+            </a>
+            <a href="{% url 'accounts:mypage' %}" class="btn btn-outline-light">
+                <i class="fas fa-user me-1"></i>マイページ
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- プラン比較 -->
+    <div class="row justify-content-center">
+        <!-- 無料プラン -->
+        <div class="col-lg-5 col-md-6 mb-4">
+            <div class="card pricing-card h-100">
+                <div class="card-body text-center p-4">
+                    <h3 class="card-title mb-3">
+                        <i class="fas fa-user text-muted me-2"></i>無料プラン
+                    </h3>
+                    <div class="price-display text-muted mb-4">
+                        ¥0<span class="price-period">/月</span>
+                    </div>
+                    
+                    <ul class="feature-list mb-4">
+                        <li>レストラン情報の閲覧</li>
+                        <li>基本的な検索機能</li>
+                        <li>お気に入り登録（5件まで）</li>
+                        <li class="text-muted"><del>レストラン予約機能</del></li>
+                        <li class="text-muted"><del>レビュー投稿・編集</del></li>
+                        <li class="text-muted"><del>詳細な検索フィルター</del></li>
+                    </ul>
+                    
+                    {% if not user.is_premium %}
+                    <div class="text-muted">
+                        <i class="fas fa-check-circle me-1"></i>現在のプラン
+                    </div>
+                    {% else %}
+                    <button class="btn btn-outline-secondary" disabled>
+                        現在のプラン
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- プレミアムプラン -->
+        <div class="col-lg-5 col-md-6 mb-4">
+            <div class="card pricing-card premium h-100">
+                <div class="card-body text-center p-4">
+                    <h3 class="card-title mb-3">
+                        <i class="fas fa-crown text-warning me-2"></i>プレミアムプラン
+                    </h3>
+                    <div class="price-display mb-4">
+                        ¥{{ subscription_settings.PREMIUM.price }}<span class="price-period">/月</span>
+                    </div>
+                    
+                    <ul class="feature-list mb-4">
+                        {% for feature in subscription_settings.PREMIUM.features %}
+                        <li>{{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    {% if not user.is_premium %}
+                    <button class="btn btn-premium w-100" onclick="startSubscription()">
+                        <i class="fas fa-credit-card me-2"></i>今すぐ始める
+                    </button>
+                    {% else %}
+                    <div class="text-success">
+                        <i class="fas fa-check-circle me-1"></i>登録済み
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 機能比較表 -->
+    <div class="comparison-table">
+        <table class="table table-borderless mb-0">
+            <thead>
+                <tr>
+                    <th>機能</th>
+                    <th class="text-center">無料プラン</th>
+                    <th class="text-center">プレミアムプラン</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>レストラン情報閲覧</td>
+                    <td class="text-center"><i class="fas fa-check check-icon"></i></td>
+                    <td class="text-center"><i class="fas fa-check check-icon"></i></td>
+                </tr>
+                <tr class="bg-light">
+                    <td>お気に入り登録</td>
+                    <td class="text-center">5件まで</td>
+                    <td class="text-center">無制限</td>
+                </tr>
+                <tr>
+                    <td>レストラン予約</td>
+                    <td class="text-center"><i class="fas fa-times cross-icon"></i></td>
+                    <td class="text-center"><i class="fas fa-check check-icon"></i></td>
+                </tr>
+                <tr class="bg-light">
+                    <td>レビュー投稿・編集</td>
+                    <td class="text-center"><i class="fas fa-times cross-icon"></i></td>
+                    <td class="text-center"><i class="fas fa-check check-icon"></i></td>
+                </tr>
+                <tr>
+                    <td>詳細検索フィルター</td>
+                    <td class="text-center"><i class="fas fa-times cross-icon"></i></td>
+                    <td class="text-center"><i class="fas fa-check check-icon"></i></td>
+                </tr>
+                <tr class="bg-light">
+                    <td>優先サポート</td>
+                    <td class="text-center"><i class="fas fa-times cross-icon"></i></td>
+                    <td class="text-center"><i class="fas fa-check check-icon"></i></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- FAQ -->
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto">
+            <h3 class="text-center mb-4">よくある質問</h3>
+            
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            いつでもキャンセルできますか？
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            はい、いつでもキャンセル可能です。キャンセル後も現在の請求期間終了まではプレミアム機能をご利用いただけます。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            支払い方法は何が利用できますか？
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            クレジットカード（Visa、MasterCard、American Express、JCB）をご利用いただけます。安全なStripe決済システムを使用しています。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            返金はありますか？
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            現在、返金は承っておりません。ただし、いつでもキャンセルが可能で、次回の請求を停止できます。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+const stripe = Stripe('{{ stripe_public_key }}');
+
+async function startSubscription() {
+    try {
+        // チェックアウトセッションを作成
+        const response = await fetch('{% url "accounts:create_checkout_session" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            alert('エラー: ' + data.error);
+            return;
+        }
+
+        // Stripeのチェックアウトページにリダイレクト
+        window.location.href = data.checkout_url;
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('予期しないエラーが発生しました。');
+    }
+}
+
+// 既にプレミアム会員の場合は決済ボタンを無効化
+{% if user.is_premium %}
+document.addEventListener('DOMContentLoaded', function() {
+    const premiumButtons = document.querySelectorAll('.btn-premium');
+    premiumButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>登録済み';
+        btn.classList.remove('btn-premium');
+        btn.classList.add('btn-success');
+    });
+});
+{% endif %}
+</script>
+
+{% csrf_token %}
+{% endblock %}

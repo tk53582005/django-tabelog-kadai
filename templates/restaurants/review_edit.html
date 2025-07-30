@@ -1,0 +1,141 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}レビュー編集 - {{ object.restaurant.name }} - NAGOYAMESHI{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- パンくずナビ -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'restaurants:detail' object.restaurant.pk %}">{{ object.restaurant.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">レビュー編集</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-edit text-primary"></i> レビュー編集
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- 店舗情報表示 -->
+                    <div class="mb-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            {% if object.restaurant.image %}
+                            <img src="{{ object.restaurant.image.url }}" class="rounded me-3" width="80" height="80" style="object-fit: cover;">
+                            {% else %}
+                            <div class="bg-secondary rounded me-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-image text-white"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="mb-1">{{ object.restaurant.name }}</h5>
+                                <span class="badge bg-primary">{{ object.restaurant.category.name }}</span>
+                                <p class="text-muted mb-0 mt-1">{{ object.restaurant.address }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- レビューフォーム -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- エラーメッセージ -->
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        <!-- 評価選択 -->
+                        <div class="mb-4">
+                            <label for="{{ form.rating.id_for_label }}" class="form-label fw-bold">
+                                {{ form.rating.label }} <span class="text-danger">*</span>
+                            </label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {{ form.rating }}
+                                    {% if form.rating.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.rating.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <div id="star-display" class="fs-4 text-warning">
+                                        <i class="far fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- コメント -->
+                        <div class="mb-4">
+                            <label for="{{ form.comment.id_for_label }}" class="form-label fw-bold">
+                                {{ form.comment.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.comment }}
+                            {% if form.comment.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.comment.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ボタン -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'restaurants:detail' object.restaurant.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> 戻る
+                            </a>
+                            <div>
+                                <a href="{% url 'restaurants:review_delete' object.pk %}" class="btn btn-danger me-2">
+                                    <i class="fas fa-trash"></i> 削除
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save"></i> 更新する
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ratingSelect = document.getElementById('rating-select');
+    const starDisplay = document.getElementById('star-display');
+    
+    function updateStars(rating) {
+        const stars = starDisplay.querySelectorAll('i');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.className = 'fas fa-star';
+            } else {
+                star.className = 'far fa-star';
+            }
+        });
+    }
+    
+    ratingSelect.addEventListener('change', function() {
+        const rating = parseInt(this.value) || 0;
+        updateStars(rating);
+    });
+    
+    // 初期表示
+    const initialRating = parseInt(ratingSelect.value) || 0;
+    updateStars(initialRating);
+});
+</script>
+{% endblock %}
