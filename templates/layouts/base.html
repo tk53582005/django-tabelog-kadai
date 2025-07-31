@@ -14,7 +14,7 @@
     <!-- ナビゲーション -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'restaurants:index' %}">
+            <a class="navbar-brand text-white" href="{% url 'restaurants:index' %}">
                 NAGOYAMESHI
             </a>
             
@@ -27,31 +27,24 @@
                     {% if user.is_authenticated %}
                         <!-- ログイン済み -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts:mypage' %}">
+                            <a class="nav-link text-white" href="{% url 'accounts:mypage' %}">
                                 マイページ
                             </a>
                         </li>
-                        {% if user.is_premium %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'restaurants:favorite_list' %}">
-                                お気に入り
-                            </a>
-                        </li>
-                        {% endif %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_logout' %}">
+                            <a class="nav-link text-white" href="{% url 'account_logout' %}">
                                 ログアウト
                             </a>
                         </li>
                     {% else %}
                         <!-- 未ログイン -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_login' %}">
+                            <a class="nav-link text-white" href="{% url 'account_login' %}">
                                 ログイン
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_signup' %}">
+                            <a class="nav-link text-white" href="{% url 'account_signup' %}">
                                 会員登録
                             </a>
                         </li>
@@ -82,7 +75,11 @@
     <footer class="bg-dark text-white mt-5">
         <div class="container py-4">
             <div class="text-center">
-                <h5>NAGOYAMESHI</h5>
+                <h5>
+                    <a href="{% url 'restaurants:index' %}" class="text-white text-decoration-none">
+                        NAGOYAMESHI
+                    </a>
+                </h5>
                 <p>名古屋のグルメ情報サイト</p>
                 <small>&copy; 2025 NAGOYAMESHI</small>
             </div>

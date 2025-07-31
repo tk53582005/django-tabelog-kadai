@@ -60,7 +60,8 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{% url 'restaurants:detail' object.restaurant.pk %}" class="btn btn-secondary">戻る</a>
+                            <!-- 「戻る」ボタン：マイページに変更 -->
+                            <a href="{% url 'accounts:mypage' %}" class="btn btn-secondary">戻る</a>
                             <div>
                                 <a href="{% url 'restaurants:review_delete' object.pk %}" class="btn btn-danger me-2">削除</a>
                                 <button type="submit" class="btn btn-primary">更新する</button>

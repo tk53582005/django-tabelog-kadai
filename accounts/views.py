@@ -31,8 +31,8 @@ class MyPageView(LoginRequiredMixin, TemplateView):
         from restaurants.models import Favorite, Review, Reservation
         context['favorite_restaurants'] = Favorite.objects.filter(user=user)[:5]
         
-        # 最近のレビューを取得
-        context['recent_reviews'] = Review.objects.filter(user=user).order_by('-created_at')[:5]
+        # 最近のレビューを取得（レビュー管理機能用に追加）
+        context['recent_reviews'] = Review.objects.filter(user=user).order_by('-created_at')[:3]
         
         # プレミアム会員の場合、予約履歴も取得
         if user.is_premium:

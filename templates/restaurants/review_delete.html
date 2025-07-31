@@ -30,9 +30,9 @@
                         <div class="mb-2">
                             {% for i in "12345" %}
                                 {% if object.rating >= i|add:0 %}
-                                <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
                                 {% else %}
-                                <i class="far fa-star text-warning"></i>
+                                    <i class="far fa-star text-warning"></i>
                                 {% endif %}
                             {% endfor %}
                             ({{ object.rating }}/5)
@@ -44,7 +44,9 @@
                     <form method="post">
                         {% csrf_token %}
                         <div class="d-flex justify-content-between">
-                            <a href="{% url 'restaurants:detail' object.restaurant.pk %}" class="btn btn-secondary">キャンセル</a>
+                            <!-- ✅ キャンセルボタンはマイページへ -->
+                            <a href="{% url 'accounts:mypage' %}" class="btn btn-secondary">キャンセル</a>
+                            <!-- ✅ 削除ボタン -->
                             <button type="submit" class="btn btn-danger">削除する</button>
                         </div>
                     </form>
