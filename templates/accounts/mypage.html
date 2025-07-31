@@ -29,6 +29,10 @@
                     <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">
                         パスワード変更
                     </a>
+                    <!-- レビュー管理リンクを追加 -->
+                    <a href="{% url 'restaurants:review_list' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-star"></i> レビュー管理
+                    </a>
                     {% if user.is_premium %}
                     <a href="{% url 'accounts:card_manage' %}" class="list-group-item list-group-item-action">
                         カード管理
@@ -100,7 +104,7 @@
                         </div>
                     </div>
                     <div class="text-end">
-                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
+                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-sm btn-outline-primary">
                             プロフィールを編集
                         </a>
                     </div>
@@ -187,7 +191,91 @@
                         {% endif %}
                     </div>
                 </div>
+
+                <!-- レビュー管理セクション -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6><i class="fas fa-star text-warning"></i> あなたのレビュー</h6>
+                        <a href="{% url 'restaurants:review_list' %}" class="btn btn-sm btn-outline-primary">すべて見る</a>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_reviews %}
+                            {% for review in recent_reviews %}
+                            <div class="border-bottom pb-2 mb-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="{% url 'restaurants:detail' review.restaurant.pk %}" class="text-decoration-none">
+                                                {{ review.restaurant.name }}
+                                            </a>
+                                        </h6>
+                                        <div class="text-warning mb-1">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="fas fa-star"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <p class="mb-1">{{ review.comment|truncatechars:50 }}</p>
+                                        <small class="text-muted">{{ review.created_at|date:"Y年m月d日" }}</small>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'restaurants:review_edit' review.pk %}" class="btn btn-outline-secondary btn-sm">編集</a>
+                                        <a href="{% url 'restaurants:review_delete' review.pk %}" class="btn btn-outline-danger btn-sm">削除</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">まだレビューがありません。</p>
+                        {% endif %}
+                    </div>
+                </div>
             {% else %}
+                <!-- 無料会員の場合のレビューセクション -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6><i class="fas fa-star text-warning"></i> あなたのレビュー</h6>
+                        <a href="{% url 'restaurants:review_list' %}" class="btn btn-sm btn-outline-primary">すべて見る</a>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_reviews %}
+                            {% for review in recent_reviews %}
+                            <div class="border-bottom pb-2 mb-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="{% url 'restaurants:detail' review.restaurant.pk %}" class="text-decoration-none">
+                                                {{ review.restaurant.name }}
+                                            </a>
+                                        </h6>
+                                        <div class="text-warning mb-1">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="fas fa-star"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <p class="mb-1">{{ review.comment|truncatechars:50 }}</p>
+                                        <small class="text-muted">{{ review.created_at|date:"Y年m月d日" }}</small>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'restaurants:review_edit' review.pk %}" class="btn btn-outline-secondary btn-sm">編集</a>
+                                        <a href="{% url 'restaurants:review_delete' review.pk %}" class="btn btn-outline-danger btn-sm">削除</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">まだレビューがありません。</p>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <!-- 無料会員向け案内 -->
                 <div class="card border-warning">
                     <div class="card-header bg-warning">

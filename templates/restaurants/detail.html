@@ -82,6 +82,26 @@
                 </div>
             </div>
             {% endif %}
+
+            <!-- お気に入りボタン -->
+            {% if user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <form method="post" action="{% url 'restaurants:toggle_favorite' restaurant.id %}">
+                        {% csrf_token %}
+                        {% if is_favorite %}
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-heart"></i> お気に入りから削除
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="far fa-heart"></i> お気に入りに追加
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 

@@ -80,36 +80,20 @@ class RestaurantDetailView(DetailView):
         return context
 
 
-@require_POST
 @login_required
 def toggle_favorite(request, restaurant_id):
-    try:
-        restaurant = get_object_or_404(Restaurant, id=restaurant_id)
-        
-        favorite, created = Favorite.objects.get_or_create(
-            user=request.user,
-            restaurant=restaurant
-        )
-        
-        if not created:
-            favorite.delete()
-            is_favorite = False
-            message = 'お気に入りから削除しました'
-        else:
-            is_favorite = True
-            message = 'お気に入りに追加しました'
-        
-        return JsonResponse({
-            'success': True,
-            'is_favorite': is_favorite,
-            'message': message
-        })
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
     
-    except:
-        return JsonResponse({
-            'success': False,
-            'message': 'エラーが発生しました。'
-        }, status=500)
+    if request.method == 'POST':
+        try:
+            favorite = Favorite.objects.get(user=request.user, restaurant=restaurant)
+            favorite.delete()
+            messages.info(request, f'「{restaurant.name}」をお気に入りから削除しました。')
+        except Favorite.DoesNotExist:
+            Favorite.objects.create(user=request.user, restaurant=restaurant)
+            messages.success(request, f'「{restaurant.name}」をお気に入りに追加しました。')
+    
+    return redirect('restaurants:detail', pk=restaurant_id)
 
 
 class FavoriteListView(LoginRequiredMixin, ListView):
@@ -175,7 +159,7 @@ class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return super().form_valid(form)
     
     def get_success_url(self):
-        return reverse('restaurants:detail', kwargs={'pk': self.object.restaurant.pk})
+        return reverse('accounts:mypage')
 
 
 class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -195,7 +179,7 @@ class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
     
     def get_success_url(self):
-        return reverse('restaurants:detail', kwargs={'pk': self.object.restaurant.pk})
+        return reverse('accounts:mypage')
 
 
 class ReviewListView(LoginRequiredMixin, ListView):

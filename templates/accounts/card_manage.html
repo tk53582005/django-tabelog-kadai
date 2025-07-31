@@ -14,11 +14,11 @@
     </nav>
 
     <div class="row">
+        <!-- サイドバー -->
         <div class="col-md-3">
-            <!-- サイドバー -->
             <div class="card">
                 <div class="card-header">
-                    <h6>アカウント管理</h6>
+                    <h6>メニュー</h6>
                 </div>
                 <div class="list-group list-group-flush">
                     <a href="{% url 'accounts:mypage' %}" class="list-group-item list-group-item-action">
@@ -30,107 +30,118 @@
                     <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">
                         パスワード変更
                     </a>
-                    <a href="{% url 'accounts:subscription_manage' %}" class="list-group-item list-group-item-action">
-                        サブスクリプション管理
+                    <!-- レビュー管理リンクを追加 -->
+                    <a href="{% url 'restaurants:review_list' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-star"></i> レビュー管理
                     </a>
+                    {% if user.is_premium %}
                     <a href="{% url 'accounts:card_manage' %}" class="list-group-item list-group-item-action active">
                         カード管理
                     </a>
+                    <a href="{% url 'accounts:subscription_manage' %}" class="list-group-item list-group-item-action">
+                        サブスクリプション管理
+                    </a>
+                    {% else %}
+                    <a href="{% url 'accounts:subscription_plan' %}" class="list-group-item list-group-item-action">
+                        プレミアム会員になる
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
+        <!-- メインコンテンツ -->
         <div class="col-md-9">
-            <!-- ページヘッダー -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>カード管理</h2>
-                <a href="{% url 'accounts:card_add' %}" class="btn btn-primary">
-                    新しいカードを追加
-                </a>
-            </div>
-
-            <!-- 登録済みカード一覧 -->
-            {% if payment_methods %}
-            <div class="row">
-                {% for payment_method in payment_methods %}
-                <div class="col-md-6 mb-3">
-                    <div class="card {% if payment_method.id == default_payment_method %}border-success{% endif %}">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div>
-                                    <h6>{{ payment_method.card.brand|title }}</h6>
-                                    <p class="mb-0">****{{ payment_method.card.last4 }}</p>
-                                    <small class="text-muted">
-                                        有効期限: {{ payment_method.card.exp_month }}/{{ payment_method.card.exp_year }}
-                                    </small>
-                                </div>
-                                {% if payment_method.id == default_payment_method %}
-                                <span class="badge bg-success">メイン</span>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="d-flex gap-2">
-                                {% if payment_method.id != default_payment_method %}
-                                <button class="btn btn-sm btn-outline-success" onclick="setDefaultCard('{{ payment_method.id }}')">
-                                    メインに設定
-                                </button>
-                                {% endif %}
-                                <button class="btn btn-sm btn-outline-danger" onclick="removeCard('{{ payment_method.id }}')">
-                                    削除
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <!-- カードが登録されていない場合 -->
             <div class="card">
-                <div class="card-body text-center py-5">
-                    <h4 class="text-muted mb-3">カードが登録されていません</h4>
-                    <p class="text-muted mb-4">支払い方法を登録してください。</p>
-                    <a href="{% url 'accounts:card_add' %}" class="btn btn-primary">
-                        カードを追加
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>カード管理</h5>
+                    <a href="{% url 'accounts:card_add' %}" class="btn btn-sm btn-outline-primary">
+                        新しいカードを追加
                     </a>
                 </div>
-            </div>
-            {% endif %}
+                <div class="card-body">
+                    <!-- 登録済みカード一覧 -->
+                    {% if payment_methods %}
+                    <div class="row">
+                        {% for payment_method in payment_methods %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card {% if payment_method.id == default_payment_method %}border-success{% endif %}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6>{{ payment_method.card.brand|title }}</h6>
+                                            <p class="mb-0">****{{ payment_method.card.last4 }}</p>
+                                            <small class="text-muted">
+                                                有効期限: {{ payment_method.card.exp_month }}/{{ payment_method.card.exp_year }}
+                                            </small>
+                                        </div>
+                                        {% if payment_method.id == default_payment_method %}
+                                        <span class="badge bg-success">メイン</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        {% if payment_method.id != default_payment_method %}
+                                        <button class="btn btn-sm btn-outline-success" onclick="setDefaultCard('{{ payment_method.id }}')">
+                                            メインに設定
+                                        </button>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-outline-danger" onclick="removeCard('{{ payment_method.id }}')">
+                                            削除
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <!-- カードが登録されていない場合 -->
+                    <div class="text-center py-5">
+                        <h4 class="text-muted mb-3">カードが登録されていません</h4>
+                        <p class="text-muted mb-4">支払い方法を登録してください。</p>
+                        <a href="{% url 'accounts:card_add' %}" class="btn btn-primary">
+                            カードを追加
+                        </a>
+                    </div>
+                    {% endif %}
 
-            <!-- 追加オプション -->
-            <div class="row mt-4">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6>カードを変更</h6>
-                            <p class="text-muted small">既存のカードを新しいカードに変更</p>
-                            <a href="{% url 'accounts:card_change' %}" class="btn btn-outline-info">
-                                カードを変更
-                            </a>
+                    <!-- 追加オプション -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h6>カードを変更</h6>
+                                    <p class="text-muted small">既存のカードを新しいカードに変更</p>
+                                    <a href="{% url 'accounts:card_change' %}" class="btn btn-outline-info">
+                                        カードを変更
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h6>請求情報</h6>
+                                    <p class="text-muted small">請求履歴と設定を確認</p>
+                                    <a href="{% url 'accounts:billing_portal' %}" class="btn btn-outline-warning">
+                                        請求ポータル
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6>請求情報</h6>
-                            <p class="text-muted small">請求履歴と設定を確認</p>
-                            <a href="{% url 'accounts:billing_portal' %}" class="btn btn-outline-warning">
-                                請求ポータル
-                            </a>
-                        </div>
+
+                    <!-- 注意事項 -->
+                    <div class="alert alert-info mt-4">
+                        <h6>ご利用について</h6>
+                        <ul class="mb-0 small">
+                            <li>カード情報は安全に管理されています</li>
+                            <li>メインカードが次回の請求で使用されます</li>
+                            <li>カード削除前に別のカードをメインに設定してください</li>
+                        </ul>
                     </div>
                 </div>
-            </div>
-
-            <!-- 注意事項 -->
-            <div class="alert alert-info mt-4">
-                <h6>ご利用について</h6>
-                <ul class="mb-0 small">
-                    <li>カード情報は安全に管理されています</li>
-                    <li>メインカードが次回の請求で使用されます</li>
-                    <li>カード削除前に別のカードをメインに設定してください</li>
-                </ul>
             </div>
         </div>
     </div>
