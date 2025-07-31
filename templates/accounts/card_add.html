@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}カード追加 - NAGOYAMESHI{% endblock %}
+{% block title %}クレジットカード追加 - NAGOYAMESHI{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -9,8 +9,8 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
             <li class="breadcrumb-item"><a href="{% url 'accounts:mypage' %}">マイページ</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'accounts:card_manage' %}">カード管理</a></li>
-            <li class="breadcrumb-item active">カード追加</li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:card_manage' %}">クレジットカード管理</a></li>
+            <li class="breadcrumb-item active">クレジットカード追加</li>
         </ol>
     </nav>
 
@@ -18,26 +18,23 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h4>新しいカードを追加</h4>
+                    <h4>新しいクレジットカードを追加</h4>
                 </div>
                 <div class="card-body">
                     <form id="card-form" method="post">
                         {% csrf_token %}
                         
                         <div class="mb-3">
-                            <label class="form-label">カード名義人</label>
+                            <label class="form-label">クレジットカード名義人</label>
                             <input type="text" 
                                    class="form-control" 
                                    id="card-holder-name" 
                                    placeholder="YAMADA TARO"
                                    required>
-                            <div class="form-text">
-                                カードに書かれた名前をローマ字で入力してください
-                            </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">カード番号</label>
+                            <label class="form-label">クレジットカード番号</label>
                             <div id="card-number-element" class="form-control">
                                 <!-- Stripe Elements -->
                             </div>
@@ -76,19 +73,10 @@
                                 戻る
                             </a>
                             <button type="submit" id="submit-button" class="btn btn-primary">
-                                カードを追加
+                                クレジットカードを追加
                             </button>
                         </div>
                     </form>
-
-                    <!-- 注意事項 -->
-                    <div class="mt-4 p-3 bg-light rounded">
-                        <h6>ご注意</h6>
-                        <ul class="small mb-0">
-                            <li>カード情報は安全に暗号化されます</li>
-                            <li>月額料金が自動で請求されます</li>
-                        </ul>
-                    </div>
                 </div>
             </div>
         </div>
@@ -101,7 +89,7 @@
 const stripe = Stripe('{{ stripe_public_key }}');
 const elements = stripe.elements();
 
-// カード要素作成
+// クレジットカード要素作成
 const cardNumber = elements.create('cardNumber');
 const cardExpiry = elements.create('cardExpiry');
 const cardCvc = elements.create('cardCvc');
@@ -139,7 +127,7 @@ document.getElementById('card-form').addEventListener('submit', async (event) =>
         if (error) {
             showError(error.message);
             submitButton.disabled = false;
-            submitButton.textContent = 'カードを追加';
+            submitButton.textContent = 'クレジットカードを追加';
         } else {
             // サーバーに送信
             const formData = new FormData(document.getElementById('card-form'));
@@ -154,15 +142,15 @@ document.getElementById('card-form').addEventListener('submit', async (event) =>
             if (response.ok) {
                 window.location.href = '{% url "accounts:card_manage" %}';
             } else {
-                showError('カードの追加に失敗しました');
+                showError('クレジットカードの追加に失敗しました');
                 submitButton.disabled = false;
-                submitButton.textContent = 'カードを追加';
+                submitButton.textContent = 'クレジットカードを追加';
             }
         }
     } catch (err) {
         showError('エラーが発生しました');
         submitButton.disabled = false;
-        submitButton.textContent = 'カードを追加';
+        submitButton.textContent = 'クレジットカードを追加';
     }
 });
 </script>

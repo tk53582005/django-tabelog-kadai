@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}カード変更 - NAGOYAMESHI{% endblock %}
+{% block title %}クレジットカード変更 - NAGOYAMESHI{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -9,8 +9,8 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
             <li class="breadcrumb-item"><a href="{% url 'accounts:mypage' %}">マイページ</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'accounts:card_manage' %}">カード管理</a></li>
-            <li class="breadcrumb-item active">カード変更</li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:card_manage' %}">クレジットカード管理</a></li>
+            <li class="breadcrumb-item active">クレジットカード変更</li>
         </ol>
     </nav>
 
@@ -18,26 +18,17 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h4>カード情報変更</h4>
+                    <h4>クレジットカード情報変更</h4>
                 </div>
                 <div class="card-body">
-                    <!-- 現在のカード情報 -->
+                    <!-- 現在のクレジットカード情報 -->
                     {% if current_payment_method %}
                     <div class="alert alert-info">
-                        <h6>現在のカード</h6>
+                        <h6>現在のクレジットカード</h6>
                         <p>{{ current_payment_method.card.brand|title }} ****{{ current_payment_method.card.last4 }}</p>
                         <p>有効期限: {{ current_payment_method.card.exp_month }}/{{ current_payment_method.card.exp_year }}</p>
                     </div>
                     {% endif %}
-
-                    <!-- 注意事項 -->
-                    <div class="alert alert-warning">
-                        <strong>注意:</strong>
-                        <ul class="mb-0">
-                            <li>現在のカードは削除されます</li>
-                            <li>新しいカードが即座に有効になります</li>
-                        </ul>
-                    </div>
 
                     <form id="card-change-form" method="post">
                         {% csrf_token %}
@@ -46,19 +37,16 @@
                         {% endif %}
                         
                         <div class="mb-3">
-                            <label class="form-label">カード名義人</label>
+                            <label class="form-label">クレジットカード名義人</label>
                             <input type="text" 
                                    class="form-control" 
                                    id="card-holder-name" 
                                    placeholder="YAMADA TARO"
                                    required>
-                            <div class="form-text">
-                                カードに書かれた名前をローマ字で入力してください
-                            </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">新しいカード番号</label>
+                            <label class="form-label">新しいクレジットカード番号</label>
                             <div id="card-number-element" class="form-control">
                                 <!-- Stripe Elements -->
                             </div>
@@ -92,20 +80,13 @@
                                     変更内容を確認
                                 </button>
                                 <button type="submit" id="submit-button" class="btn btn-primary" style="display: none;">
-                                    カードを変更
+                                    クレジットカードを変更
                                 </button>
                             </div>
                         </div>
                     </form>
 
-                    <!-- セキュリティ情報 -->
-                    <div class="mt-4 p-3 bg-light rounded">
-                        <h6>セキュリティについて</h6>
-                        <ul class="small mb-0">
-                            <li>全ての通信は暗号化されています</li>
-                            <li>カード情報は安全に管理されます</li>
-                        </ul>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -118,7 +99,7 @@
 const stripe = Stripe('{{ stripe_public_key }}');
 const elements = stripe.elements();
 
-// カード要素作成
+// クレジットカード要素作成
 const cardNumber = elements.create('cardNumber');
 const cardExpiry = elements.create('cardExpiry');
 const cardCvc = elements.create('cardCvc');
@@ -140,11 +121,11 @@ function confirmChange() {
     const holderName = document.getElementById('card-holder-name').value;
     
     if (!holderName) {
-        alert('カード名義人を入力してください。');
+        alert('クレジットカード名義人を入力してください。');
         return;
     }
     
-    if (confirm('カード情報を変更しますか？\n現在のカードは削除されます。')) {
+    if (confirm('クレジットカード情報を変更しますか？\n現在のクレジットカードは削除されます。')) {
         document.getElementById('submit-button').style.display = 'inline-block';
         document.querySelector('button[onclick="confirmChange()"]').style.display = 'none';
     }
@@ -171,7 +152,7 @@ document.getElementById('card-change-form').addEventListener('submit', async (ev
         if (error) {
             showError(error.message);
             submitButton.disabled = false;
-            submitButton.textContent = 'カードを変更';
+            submitButton.textContent = 'クレジットカードを変更';
         } else {
             // サーバーに送信
             const formData = new FormData(document.getElementById('card-change-form'));
@@ -185,15 +166,15 @@ document.getElementById('card-change-form').addEventListener('submit', async (ev
             if (response.ok) {
                 window.location.href = '{% url "accounts:card_manage" %}';
             } else {
-                showError('カードの変更に失敗しました');
+                showError('クレジットカードの変更に失敗しました');
                 submitButton.disabled = false;
-                submitButton.textContent = 'カードを変更';
+                submitButton.textContent = 'クレジットカードを変更';
             }
         }
     } catch (err) {
         showError('エラーが発生しました');
         submitButton.disabled = false;
-        submitButton.textContent = 'カードを変更';
+        submitButton.textContent = 'クレジットカードを変更';
     }
 });
 </script>

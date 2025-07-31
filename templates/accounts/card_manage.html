@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}カード管理 - NAGOYAMESHI{% endblock %}
+{% block title %}クレジットカード管理 - NAGOYAMESHI{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -9,7 +9,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
             <li class="breadcrumb-item"><a href="{% url 'accounts:mypage' %}">マイページ</a></li>
-            <li class="breadcrumb-item active">カード管理</li>
+            <li class="breadcrumb-item active">クレジットカード管理</li>
         </ol>
     </nav>
 
@@ -36,7 +36,7 @@
                     </a>
                     {% if user.is_premium %}
                     <a href="{% url 'accounts:card_manage' %}" class="list-group-item list-group-item-action active">
-                        カード管理
+                        クレジットカード管理
                     </a>
                     <a href="{% url 'accounts:subscription_manage' %}" class="list-group-item list-group-item-action">
                         サブスクリプション管理
@@ -54,9 +54,9 @@
         <div class="col-md-9">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5>カード管理</h5>
+                    <h5>クレジットカード管理</h5>
                     <a href="{% url 'accounts:card_add' %}" class="btn btn-sm btn-outline-primary">
-                        新しいカードを追加
+                        新しいクレジットカードを追加
                     </a>
                 </div>
                 <div class="card-body">
@@ -98,49 +98,30 @@
                     {% else %}
                     <!-- カードが登録されていない場合 -->
                     <div class="text-center py-5">
-                        <h4 class="text-muted mb-3">カードが登録されていません</h4>
+                        <h4 class="text-muted mb-3">クレジットカードが登録されていません</h4>
                         <p class="text-muted mb-4">支払い方法を登録してください。</p>
                         <a href="{% url 'accounts:card_add' %}" class="btn btn-primary">
-                            カードを追加
+                            クレジットカードを追加
                         </a>
                     </div>
                     {% endif %}
 
-                    <!-- 追加オプション -->
+                    <!-- カード変更オプション -->
                     <div class="row mt-4">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="card">
                                 <div class="card-body text-center">
-                                    <h6>カードを変更</h6>
-                                    <p class="text-muted small">既存のカードを新しいカードに変更</p>
+                                    <h6>クレジットカードを変更</h6>
+                                    <p class="text-muted small">既存のクレジットカードを新しいクレジットカードに変更</p>
                                     <a href="{% url 'accounts:card_change' %}" class="btn btn-outline-info">
-                                        カードを変更
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body text-center">
-                                    <h6>請求情報</h6>
-                                    <p class="text-muted small">請求履歴と設定を確認</p>
-                                    <a href="{% url 'accounts:billing_portal' %}" class="btn btn-outline-warning">
-                                        請求ポータル
+                                        クレジットカードを変更
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 注意事項 -->
-                    <div class="alert alert-info mt-4">
-                        <h6>ご利用について</h6>
-                        <ul class="mb-0 small">
-                            <li>カード情報は安全に管理されています</li>
-                            <li>メインカードが次回の請求で使用されます</li>
-                            <li>カード削除前に別のカードをメインに設定してください</li>
-                        </ul>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -148,9 +129,9 @@
 </div>
 
 <script>
-// カードをメインに設定
+// クレジットカードをメインに設定
 function setDefaultCard(paymentMethodId) {
-    if (confirm('このカードをメインの支払い方法に設定しますか？')) {
+    if (confirm('このクレジットカードをメインの支払い方法に設定しますか？')) {
         fetch('{% url "accounts:set_default_card" %}', {
             method: 'POST',
             headers: {
@@ -173,9 +154,9 @@ function setDefaultCard(paymentMethodId) {
     }
 }
 
-// カードを削除
+// クレジットカードを削除
 function removeCard(paymentMethodId) {
-    if (confirm('このカードを削除しますか？')) {
+    if (confirm('このクレジットカードを削除しますか？')) {
         fetch('{% url "accounts:remove_payment_method" %}', {
             method: 'POST',
             headers: {
