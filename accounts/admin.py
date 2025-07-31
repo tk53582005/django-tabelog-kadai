@@ -1,15 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import Group
 from .models import CustomUser
-
-# グループ機能を管理画面から削除（学生レベルには不要）
-admin.site.unregister(Group)
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ('email', 'first_name', 'last_name', 'is_premium', 'is_staff', 'date_joined')
+    list_display = ('email', 'last_name', 'first_name', 'is_premium', 'is_staff', 'date_joined')
     list_filter = ('is_premium', 'is_staff', 'is_superuser', 'date_joined')
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('date_joined',)  # created_at → date_joined に変更
