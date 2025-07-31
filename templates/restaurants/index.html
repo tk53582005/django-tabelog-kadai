@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container mt-4">
-    <!-- 検索フォーム -->
+    <!-- 検索フォーム（修正済み：ボタン1段表示） -->
     <div class="row mb-4">
         <div class="col-md-8 mx-auto">
             <form method="GET" class="d-flex">
@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <!-- 店舗一覧 -->
+    <!-- 店舗一覧（修正済み：カード高さ統一） -->
     <div class="row">
         {% for restaurant in restaurants %}
         <div class="col-md-4 mb-4">
@@ -87,7 +87,11 @@
                         {% endwith %}
                     </div>
                     
+<<<<<<< HEAD
                     <!-- 詳細ボタン -->
+=======
+                    <!-- ボタンを下部に固定 -->
+>>>>>>> b86bfd2
                     <div class="mt-auto">
                         <a href="{% url 'restaurants:detail' restaurant.pk %}" class="btn btn-primary btn-sm">詳細を見る</a>
                     </div>
@@ -120,7 +124,7 @@
             
             {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.keyword %}&keyword={{ request.GET.keyword }}{% endif %}">次へ</a>
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.keyword %}&keyword={{ request.GET.keyword %}{% endif %}">次へ</a>
             </li>
             {% endif %}
         </ul>

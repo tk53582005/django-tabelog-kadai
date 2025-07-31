@@ -4,7 +4,6 @@
 
 {% block content %}
 <div class="container mt-4">
-    <!-- パンくずナビ -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'restaurants:index' %}">トップ</a></li>
@@ -14,8 +13,8 @@
     </nav>
 
     <div class="row">
+        <!-- サイドバー -->
         <div class="col-md-3">
-            <!-- サイドバー -->
             <div class="card">
                 <div class="card-header">
                     <h6>メニュー</h6>
@@ -30,6 +29,9 @@
                     <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">
                         パスワード変更
                     </a>
+                    <a href="{% url 'restaurants:review_list' %}" class="list-group-item list-group-item-action">
+                        レビュー管理
+                    </a>
                     <a href="{% url 'accounts:card_manage' %}" class="list-group-item list-group-item-action">
                         カード管理
                     </a>
@@ -40,33 +42,24 @@
             </div>
         </div>
 
+        <!-- メインコンテンツ -->
         <div class="col-md-9">
-            <!-- ページタイトル -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>プレミアム会員管理</h2>
                 <span class="badge bg-success">アクティブ</span>
             </div>
 
-            <!-- サブスクリプション情報 -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h5>プレミアム会員プラン</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-sm-6 mb-3">
-                            <strong>料金:</strong> ¥300/月
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <strong>決済方法:</strong> クレジットカード
-                        </div>
+                        <div class="col-sm-6 mb-3"><strong>料金:</strong> ¥300/月</div>
+                        <div class="col-sm-6 mb-3"><strong>決済方法:</strong> クレジットカード</div>
                         {% if subscription %}
-                        <div class="col-sm-6 mb-3">
-                            <strong>開始日:</strong> {{ subscription.current_period_start|date:"Y年m月d日" }}
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <strong>次回更新:</strong> {{ subscription.current_period_end|date:"Y年m月d日" }}
-                        </div>
+                        <div class="col-sm-6 mb-3"><strong>開始日:</strong> {{ subscription.current_period_start|date:"Y年m月d日" }}</div>
+                        <div class="col-sm-6 mb-3"><strong>次回更新:</strong> {{ subscription.current_period_end|date:"Y年m月d日" }}</div>
                         {% endif %}
                     </div>
 
@@ -78,62 +71,33 @@
                     {% endif %}
 
                     <div class="text-end">
-                        <button class="btn btn-danger" onclick="confirmCancel()">
-                            キャンセル
-                        </button>
+                        <button class="btn btn-danger" onclick="confirmCancel()">キャンセル</button>
                     </div>
                 </div>
             </div>
 
-            <!-- 利用状況 -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h6>プレミアム機能の利用状況</h6>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3 text-center">
-                            <h4 class="text-primary">
-                                {% if user.reservation_set.count %}
-                                    {{ user.reservation_set.count }}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </h4>
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <h4 class="text-primary">{{ user.reservation_set.count|default:0 }}</h4>
                             <small class="text-muted">予約数</small>
                         </div>
-
-                        <div class="col-md-3 mb-3 text-center">
-                            <h4 class="text-success">
-                                {% if user.review_set.count %}
-                                    {{ user.review_set.count }}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </h4>
+                        <div class="col-md-4 mb-3">
+                            <h4 class="text-success">{{ user.review_set.count|default:0 }}</h4>
                             <small class="text-muted">レビュー数</small>
                         </div>
-
-                        <div class="col-md-3 mb-3 text-center">
-                            <h4 class="text-danger">
-                                {% if user.favorite_set.count %}
-                                    {{ user.favorite_set.count }}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </h4>
+                        <div class="col-md-4 mb-3">
+                            <h4 class="text-danger">{{ user.favorite_set.count|default:0 }}</h4>
                             <small class="text-muted">お気に入り</small>
-                        </div>
-
-                        <div class="col-md-3 mb-3 text-center">
-                            <h4 class="text-info">∞</h4>
-                            <small class="text-muted">検索回数</small>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 決済履歴 -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h6>決済履歴</h6>
@@ -141,21 +105,15 @@
                 <div class="card-body">
                     {% if payment_history %}
                         {% for payment in payment_history %}
-                        <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                        <div class="d-flex justify-content-between py-2 {% if not forloop.last %}border-bottom{% endif %}">
                             <div>
                                 <h6 class="mb-1">{{ payment.description }}</h6>
-                                <small class="text-muted">
-                                    {{ payment.created_at|date:"Y年m月d日" }}
-                                </small>
+                                <small class="text-muted">{{ payment.created_at|date:"Y年m月d日" }}</small>
                             </div>
                             <div class="text-end">
                                 <div class="h6">¥{{ payment.amount|floatformat:0 }}</div>
                                 <span class="badge {% if payment.status == 'succeeded' %}bg-success{% else %}bg-danger{% endif %}">
-                                    {% if payment.status == 'succeeded' %}
-                                        成功
-                                    {% else %}
-                                        失敗
-                                    {% endif %}
+                                    {{ payment.status|yesno:"成功,失敗" }}
                                 </span>
                             </div>
                         </div>
@@ -166,32 +124,22 @@
                 </div>
             </div>
 
-            <!-- 便利なリンク -->
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
+                    <div class="card text-center">
+                        <div class="card-body">
                             <h6>レストランを予約</h6>
-                            <p class="text-muted small">
-                                プレミアム機能を活用してお気に入りの店舗を予約
-                            </p>
-                            <a href="{% url 'restaurants:index' %}" class="btn btn-primary">
-                                レストランを探す
-                            </a>
+                            <p class="text-muted small">お気に入りの店舗を予約</p>
+                            <a href="{% url 'restaurants:index' %}" class="btn btn-primary">レストランを探す</a>
                         </div>
                     </div>
                 </div>
-
                 <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
+                    <div class="card text-center">
+                        <div class="card-body">
                             <h6>マイページ</h6>
-                            <p class="text-muted small">
-                                予約履歴やレビューを確認・管理
-                            </p>
-                            <a href="{% url 'accounts:mypage' %}" class="btn btn-success">
-                                マイページ
-                            </a>
+                            <p class="text-muted small">予約やレビューの管理</p>
+                            <a href="{% url 'accounts:mypage' %}" class="btn btn-success">マイページ</a>
                         </div>
                     </div>
                 </div>
@@ -211,22 +159,16 @@
             <div class="modal-body">
                 <div class="alert alert-warning">
                     <h6>キャンセルについて</h6>
-                    <ul class="mb-0">
-                        <li>キャンセル後、現在の期間終了時にプレミアム機能が停止します</li>
-                        <li>期間終了まではすべての機能をご利用いただけます</li>
-                        <li>いつでも再度プレミアム会員になることができます</li>
+                    <ul>
+                        <li>キャンセル後、期間終了時にプレミアム機能が停止します</li>
+                        <li>それまではすべての機能を利用できます</li>
                     </ul>
                 </div>
-                
-                <p>本当にプレミアム会員をキャンセルしますか？</p>
+                <p>本当にキャンセルしますか？</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    やめる
-                </button>
-                <button type="button" class="btn btn-danger" onclick="cancelSubscription()">
-                    キャンセル実行
-                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">やめる</button>
+                <button type="button" class="btn btn-danger" onclick="cancelSubscription()">キャンセル実行</button>
             </div>
         </div>
     </div>
@@ -237,7 +179,6 @@ function confirmCancel() {
     const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
     modal.show();
 }
-
 function cancelSubscription() {
     fetch('{% url "accounts:cancel_subscription" %}', {
         method: 'POST',
@@ -249,17 +190,13 @@ function cancelSubscription() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('サブスクリプションのキャンセルを受け付けました。');
+            alert('キャンセルを受け付けました');
             location.reload();
         } else {
             alert('エラー: ' + data.error);
         }
     })
-    .catch(error => {
-        alert('予期しないエラーが発生しました。');
-    });
+    .catch(() => alert('通信エラーが発生しました'));
 }
 </script>
-
-{% csrf_token %}
 {% endblock %}

@@ -4,7 +4,7 @@ from . import views
 app_name = 'accounts'
 
 urlpatterns = [
-    # 既存のURL
+    # 基本機能
     path('mypage/', views.MyPageView.as_view(), name='mypage'),
     path('profile/edit/', views.ProfileEditView.as_view(), name='profile_edit'),
     path('password/change/', views.password_change_view, name='password_change'),
