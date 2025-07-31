@@ -93,23 +93,16 @@ def toggle_favorite(request, restaurant_id):
         
         if not created:
             favorite.delete()
-            is_favorite = False
-            message = 'お気に入りから削除しました'
+            messages.success(request, 'お気に入りから削除しました')
         else:
-            is_favorite = True
-            message = 'お気に入りに追加しました'
+            messages.success(request, 'お気に入りに追加しました')
         
-        return JsonResponse({
-            'success': True,
-            'is_favorite': is_favorite,
-            'message': message
-        })
+        # 学生らしいシンプルなリダイレクト
+        return redirect('restaurants:detail', pk=restaurant_id)
     
-    except:
-        return JsonResponse({
-            'success': False,
-            'message': 'エラーが発生しました。'
-        }, status=500)
+    except Exception as e:
+        messages.error(request, 'エラーが発生しました')
+        return redirect('restaurants:detail', pk=restaurant_id)
 
 
 class FavoriteListView(LoginRequiredMixin, ListView):

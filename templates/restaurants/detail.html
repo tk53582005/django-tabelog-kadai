@@ -74,6 +74,26 @@
                 </div>
             </div>
 
+            <!-- お気に入りボタン -->
+            {% if user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <form method="post" action="{% url 'restaurants:toggle_favorite' restaurant.pk %}">
+                        {% csrf_token %}
+                        {% if is_favorite %}
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="fas fa-heart"></i> お気に入り解除
+                        </button>
+                        {% else %}
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="far fa-heart"></i> お気に入り追加
+                        </button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- 予約ボタン -->
             {% if user.is_authenticated and user.is_premium %}
             <div class="card mb-4">
