@@ -15,31 +15,8 @@
                     <h2 class="mb-3">決済がキャンセルされました</h2>
                     <p class="mb-4">
                         プレミアム会員の登録は完了していません。<br>
-                        もう一度お試しいただくか、トップページにお戻りください。
+                        無料会員としても引き続きご利用いただけます。
                     </p>
-
-                    <!-- よくある理由 -->
-                    <div class="alert alert-info">
-                        <h6>よくあるキャンセル理由</h6>
-                        <ul class="text-start mb-0">
-                            <li>クレジットカード情報の入力ミス</li>
-                            <li>カード会社での認証が必要</li>
-                            <li>もう少し検討したい</li>
-                        </ul>
-                    </div>
-
-                    <!-- プレミアム特典の再確認 -->
-                    <div class="card bg-light mb-4">
-                        <div class="card-body">
-                            <h6>プレミアム会員の特典</h6>
-                            <ul class="text-start mb-0">
-                                <li>レストラン予約機能</li>
-                                <li>レビュー投稿</li>
-                                <li>お気に入り無制限登録</li>
-                                <li>詳細な検索機能</li>
-                            </ul>
-                        </div>
-                    </div>
 
                     <div class="d-flex justify-content-center gap-3">
                         <a href="{% url 'accounts:subscription_plan' %}" class="btn btn-primary">
@@ -50,84 +27,6 @@
                         </a>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 無料機能の案内 -->
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h4 class="text-center mb-4">無料でもご利用いただけます</h4>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6>レストラン検索</h6>
-                            <p class="small text-muted">
-                                名古屋のレストラン情報を検索できます
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6>お気に入り登録</h6>
-                            <p class="small text-muted">
-                                気になるレストランを5件まで保存
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6>詳細情報</h6>
-                            <p class="small text-muted">
-                                営業時間や住所などの基本情報
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6>レビュー閲覧</h6>
-                            <p class="small text-muted">
-                                他のユーザーのレビューを参考に
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-center mt-4">
-                <a href="{% url 'restaurants:index' %}" class="btn btn-primary">
-                    レストランを探す
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- サポート -->
-<div class="bg-light py-4 mt-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 text-center">
-                <h6>お困りですか？</h6>
-                <p class="text-muted">
-                    決済についてご不明な点がございましたら、お問い合わせください。
-                </p>
-                <a href="mailto:support@nagoyameshi.com" class="btn btn-outline-primary">
-                    サポートに連絡
-                </a>
             </div>
         </div>
     </div>

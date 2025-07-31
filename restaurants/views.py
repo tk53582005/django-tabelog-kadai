@@ -64,10 +64,12 @@ class RestaurantDetailView(DetailView):
         
         # ユーザーがログインしている場合
         if self.request.user.is_authenticated:
-            context['is_favorite'] = Favorite.objects.filter(
-                user=self.request.user, 
-                restaurant=restaurant
-            ).exists()
+            # プレミアム会員のみお気に入り機能を表示
+            if hasattr(self.request.user, 'is_premium') and self.request.user.is_premium:
+                context['is_favorite'] = Favorite.objects.filter(
+                    user=self.request.user, 
+                    restaurant=restaurant
+                ).exists()
             
             context['user_review'] = reviews.filter(user=self.request.user).first()
             
@@ -82,6 +84,11 @@ class RestaurantDetailView(DetailView):
 
 @login_required
 def toggle_favorite(request, restaurant_id):
+    # プレミアム会員チェック
+    if not (hasattr(request.user, 'is_premium') and request.user.is_premium):
+        messages.error(request, 'お気に入り登録はプレミアム会員限定の機能です。')
+        return redirect('restaurants:detail', pk=restaurant_id)
+    
     restaurant = get_object_or_404(Restaurant, id=restaurant_id)
     
     if request.method == 'POST':
@@ -96,11 +103,19 @@ def toggle_favorite(request, restaurant_id):
     return redirect('restaurants:detail', pk=restaurant_id)
 
 
-class FavoriteListView(LoginRequiredMixin, ListView):
+class FavoriteListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Favorite
     template_name = 'restaurants/favorite_list.html'
     context_object_name = 'favorites'
     paginate_by = 12
+    
+    def test_func(self):
+        # プレミアム会員のみ
+        return hasattr(self.request.user, 'is_premium') and self.request.user.is_premium
+    
+    def handle_no_permission(self):
+        messages.error(self.request, 'お気に入り機能はプレミアム会員限定です。')
+        return redirect('restaurants:index')
     
     def get_queryset(self):
         return Favorite.objects.filter(user=self.request.user).order_by('-created_at')

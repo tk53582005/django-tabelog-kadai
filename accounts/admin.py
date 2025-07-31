@@ -29,3 +29,25 @@ class CustomUserAdmin(UserAdmin):
     
     # 読み取り専用フィールド
     readonly_fields = ('date_joined', 'last_login')
+
+
+# 不要なモデルを管理画面から削除
+try:
+    from allauth.account.models import EmailAddress
+    admin.site.unregister(EmailAddress)
+except:
+    pass
+
+try:
+    from django.contrib.sites.models import Site
+    admin.site.unregister(Site)
+except:
+    pass
+
+try:
+    from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
+    admin.site.unregister(SocialAccount)
+    admin.site.unregister(SocialApp) 
+    admin.site.unregister(SocialToken)
+except:
+    pass

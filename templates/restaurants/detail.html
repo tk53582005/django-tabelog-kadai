@@ -83,8 +83,8 @@
             </div>
             {% endif %}
 
-            <!-- お気に入りボタン -->
-            {% if user.is_authenticated %}
+            <!-- お気に入りボタン（プレミアム会員限定） -->
+            {% if user.is_authenticated and user.is_premium %}
             <div class="card mb-4">
                 <div class="card-body text-center">
                     <form method="post" action="{% url 'restaurants:toggle_favorite' restaurant.id %}">
@@ -99,6 +99,16 @@
                             </button>
                         {% endif %}
                     </form>
+                </div>
+            </div>
+            {% elif user.is_authenticated %}
+            <!-- 無料会員への案内 -->
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <p class="text-muted mb-2">お気に入り登録はプレミアム会員限定です</p>
+                    <a href="{% url 'accounts:subscription_plan' %}" class="btn btn-warning btn-sm">
+                        プレミアム会員になる
+                    </a>
                 </div>
             </div>
             {% endif %}

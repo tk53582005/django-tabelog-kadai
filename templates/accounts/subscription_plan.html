@@ -5,27 +5,19 @@
 {% block content %}
 <div class="container mt-4">
     <!-- ページタイトル -->
-    <div class="text-center mb-5">
+    <div class="text-center mb-4">
         <h1>プレミアム会員</h1>
-        <p class="text-muted">より充実したレストラン体験をお楽しみください</p>
+        <p class="text-muted">月額300円でもっと便利に！</p>
     </div>
 
     <!-- 既にプレミアム会員の場合 -->
     {% if user.is_premium %}
     <div class="alert alert-success text-center">
         <h4>プレミアム会員として登録済み</h4>
-        <p class="mb-3">ありがとうございます！すべての機能をご利用いただけます。</p>
-        {% if current_subscription %}
-        <p class="mb-0">
-            次回更新日: {{ current_subscription.current_period_end|date:"Y年m月d日" }}
-        </p>
-        {% endif %}
+        <p class="mb-3">ありがとうございます！</p>
         <div class="mt-3">
-            <a href="{% url 'accounts:subscription_manage' %}" class="btn btn-primary me-2">
-                サブスクリプション管理
-            </a>
-            <a href="{% url 'accounts:mypage' %}" class="btn btn-secondary">
-                マイページ
+            <a href="{% url 'accounts:mypage' %}" class="btn btn-primary">
+                マイページに戻る
             </a>
         </div>
     </div>
@@ -45,10 +37,9 @@
                     <ul class="list-unstyled">
                         <li class="mb-2">✓ レストラン情報の閲覧</li>
                         <li class="mb-2">✓ 基本的な検索機能</li>
-                        <li class="mb-2">✓ お気に入り登録（5件まで）</li>
                         <li class="mb-2 text-muted">✗ レストラン予約機能</li>
-                        <li class="mb-2 text-muted">✗ レビュー投稿・編集</li>
-                        <li class="mb-2 text-muted">✗ 詳細な検索フィルター</li>
+                        <li class="mb-2 text-muted">✗ レビュー投稿</li>
+                        <li class="mb-2 text-muted">✗ お気に入り登録</li>
                     </ul>
                     
                     {% if not user.is_premium %}
@@ -70,10 +61,9 @@
                     <ul class="list-unstyled">
                         <li class="mb-2">✓ レストラン情報の閲覧</li>
                         <li class="mb-2">✓ 基本的な検索機能</li>
-                        <li class="mb-2">✓ お気に入り登録（無制限）</li>
                         <li class="mb-2">✓ レストラン予約機能</li>
-                        <li class="mb-2">✓ レビュー投稿・編集</li>
-                        <li class="mb-2">✓ 詳細な検索フィルター</li>
+                        <li class="mb-2">✓ レビュー投稿</li>
+                        <li class="mb-2">✓ お気に入り登録</li>
                     </ul>
                     
                     {% if not user.is_premium %}
@@ -88,97 +78,12 @@
         </div>
     </div>
 
-    <!-- 機能比較表 -->
-    <div class="card mt-5">
-        <div class="card-header">
-            <h5>機能比較</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>機能</th>
-                            <th class="text-center">無料プラン</th>
-                            <th class="text-center">プレミアムプラン</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>レストラン情報閲覧</td>
-                            <td class="text-center">✓</td>
-                            <td class="text-center">✓</td>
-                        </tr>
-                        <tr>
-                            <td>お気に入り登録</td>
-                            <td class="text-center">5件まで</td>
-                            <td class="text-center">無制限</td>
-                        </tr>
-                        <tr>
-                            <td>レストラン予約</td>
-                            <td class="text-center">✗</td>
-                            <td class="text-center">✓</td>
-                        </tr>
-                        <tr>
-                            <td>レビュー投稿・編集</td>
-                            <td class="text-center">✗</td>
-                            <td class="text-center">✓</td>
-                        </tr>
-                        <tr>
-                            <td>詳細検索フィルター</td>
-                            <td class="text-center">✗</td>
-                            <td class="text-center">✓</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- よくある質問 -->
-    <div class="mt-5">
-        <h4 class="text-center mb-4">よくある質問</h4>
-        
-        <div class="accordion" id="faqAccordion">
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                        いつでもキャンセルできますか？
-                    </button>
-                </h2>
-                <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                    <div class="accordion-body">
-                        はい、いつでもキャンセル可能です。キャンセル後も現在の請求期間終了まではプレミアム機能をご利用いただけます。
-                    </div>
-                </div>
-            </div>
-            
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                        支払い方法は何が利用できますか？
-                    </button>
-                </h2>
-                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                    <div class="accordion-body">
-                        クレジットカード（Visa、MasterCard、American Express、JCB）をご利用いただけます。
-                    </div>
-                </div>
-            </div>
-            
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                        返金はありますか？
-                    </button>
-                </h2>
-                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                    <div class="accordion-body">
-                        現在、返金は承っておりません。ただし、いつでもキャンセルが可能です。
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- シンプルな説明 -->
+    <div class="text-center mt-4">
+        <p class="text-muted">
+            プレミアム会員になると、レストランの予約やレビューの投稿、お気に入り登録ができるようになります。<br>
+            いつでもキャンセル可能です。
+        </p>
     </div>
 </div>
 

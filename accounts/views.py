@@ -27,9 +27,10 @@ class MyPageView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
-        # お気に入り店舗を取得
+        # プレミアム会員のみお気に入り店舗を取得
         from restaurants.models import Favorite, Review, Reservation
-        context['favorite_restaurants'] = Favorite.objects.filter(user=user)[:5]
+        if user.is_premium:
+            context['favorite_restaurants'] = Favorite.objects.filter(user=user)[:5]
         
         # 最近のレビューを取得
         context['recent_reviews'] = Review.objects.filter(user=user).order_by('-created_at')[:5]

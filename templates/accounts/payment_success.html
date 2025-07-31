@@ -15,46 +15,8 @@
                     <h2 class="mb-3">プレミアム会員登録完了！</h2>
                     <p class="mb-4">
                         ご決済ありがとうございます！<br>
-                        NAGOYAMESHIプレミアム会員として、すべての機能をご利用いただけます。
+                        プレミアム機能をお楽しみください。
                     </p>
-
-                    <!-- 契約内容 -->
-                    {% if session %}
-                    <div class="alert alert-info">
-                        <h6>ご契約内容</h6>
-                        <div class="row text-start">
-                            <div class="col-sm-6">
-                                <strong>プラン:</strong> プレミアム会員
-                            </div>
-                            <div class="col-sm-6">
-                                <strong>月額料金:</strong> ¥300
-                            </div>
-                            <div class="col-sm-6">
-                                <strong>決済方法:</strong> クレジットカード
-                            </div>
-                            <div class="col-sm-6">
-                                <strong>次回更新:</strong> 
-                                {% if subscription %}
-                                    {{ subscription.current_period_end|date:"Y年m月d日" }}
-                                {% else %}
-                                    1ヶ月後
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- 今すぐできること -->
-                    <div class="card bg-light mb-4">
-                        <div class="card-body">
-                            <h6>今すぐできること</h6>
-                            <ul class="text-start">
-                                <li>レストランを予約する</li>
-                                <li>レビューを投稿する</li>
-                                <li>お気に入りを無制限登録</li>
-                            </ul>
-                        </div>
-                    </div>
 
                     <div class="d-flex justify-content-center gap-3">
                         <a href="{% url 'restaurants:index' %}" class="btn btn-primary">
@@ -64,83 +26,6 @@
                             マイページ
                         </a>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- プレミアム機能の説明 -->
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <h4 class="text-center mb-4">プレミアム機能</h4>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6>レストラン予約</h6>
-                            <p class="text-muted small">
-                                お気に入りのレストランを簡単に予約
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6>レビュー投稿</h6>
-                            <p class="text-muted small">
-                                レストランのレビューを投稿・編集
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6>無制限お気に入り</h6>
-                            <p class="text-muted small">
-                                気になるレストランを無制限に登録
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6>詳細検索</h6>
-                            <p class="text-muted small">
-                                価格帯、評価などで詳細検索
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- サポート -->
-<div class="bg-light py-4 mt-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 text-center">
-                <h6>サポートについて</h6>
-                <p class="text-muted">
-                    ご不明な点がございましたら、お気軽にお問い合わせください。
-                </p>
-                <div>
-                    <a href="{% url 'accounts:subscription_manage' %}" class="btn btn-outline-primary me-2">
-                        サブスクリプション管理
-                    </a>
-                    <a href="mailto:support@nagoyameshi.com" class="btn btn-outline-secondary">
-                        サポートに連絡
-                    </a>
                 </div>
             </div>
         </div>
