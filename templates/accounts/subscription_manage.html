@@ -30,10 +30,7 @@
                     <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">
                         パスワード変更
                     </a>
-                    <!-- レビュー管理リンクを追加 -->
-                    <a href="{% url 'restaurants:review_list' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-star"></i> レビュー管理
-                    </a>
+
                     {% if user.is_premium %}
                     <a href="{% url 'accounts:card_manage' %}" class="list-group-item list-group-item-action">
                         クレジットカード管理
@@ -136,39 +133,6 @@
                                     <small class="text-muted">お気に入り</small>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- 決済履歴 -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h6>決済履歴</h6>
-                        </div>
-                        <div class="card-body">
-                            {% if payment_history %}
-                                {% for payment in payment_history %}
-                                <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
-                                    <div>
-                                        <h6 class="mb-1">{{ payment.description }}</h6>
-                                        <small class="text-muted">
-                                            {{ payment.created_at|date:"Y年m月d日" }}
-                                        </small>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="h6">¥{{ payment.amount|floatformat:0 }}</div>
-                                        <span class="badge {% if payment.status == 'succeeded' %}bg-success{% else %}bg-danger{% endif %}">
-                                            {% if payment.status == 'succeeded' %}
-                                                成功
-                                            {% else %}
-                                                失敗
-                                            {% endif %}
-                                        </span>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <p class="text-muted text-center">決済履歴はまだありません</p>
-                            {% endif %}
                         </div>
                     </div>
 

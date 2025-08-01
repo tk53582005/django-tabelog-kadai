@@ -29,10 +29,6 @@
                     <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">
                         パスワード変更
                     </a>
-                    <!-- レビュー管理リンクを追加 -->
-                    <a href="{% url 'restaurants:review_list' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-star"></i> レビュー管理
-                    </a>
                     {% if user.is_premium %}
                     <a href="{% url 'accounts:card_manage' %}" class="list-group-item list-group-item-action">
                         クレジットカード管理
@@ -105,7 +101,7 @@
                     </div>
                     <div class="text-end">
                         <a href="{% url 'accounts:profile_edit' %}" class="btn btn-sm btn-outline-primary">
-                            プロフィールを編集
+                            プロフィール編集
                         </a>
                     </div>
                 </div>

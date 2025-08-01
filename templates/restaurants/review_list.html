@@ -14,45 +14,9 @@
         </ol>
     </nav>
 
+    <!-- メインコンテンツ -->
     <div class="row">
-        <!-- サイドバー -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h6>メニュー</h6>
-                </div>
-                <div class="list-group list-group-flush">
-                    <a href="{% url 'accounts:mypage' %}" class="list-group-item list-group-item-action">
-                        マイページ
-                    </a>
-                    <a href="{% url 'accounts:profile_edit' %}" class="list-group-item list-group-item-action">
-                        プロフィール編集
-                    </a>
-                    <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">
-                        パスワード変更
-                    </a>
-                    <!-- レビュー管理リンクを追加 -->
-                    <a href="{% url 'restaurants:review_list' %}" class="list-group-item list-group-item-action active">
-                        <i class="fas fa-star"></i> レビュー管理
-                    </a>
-                    {% if user.is_premium %}
-                    <a href="{% url 'accounts:card_manage' %}" class="list-group-item list-group-item-action">
-                        クレジットカード管理
-                    </a>
-                    <a href="{% url 'accounts:subscription_manage' %}" class="list-group-item list-group-item-action">
-                        サブスクリプション管理
-                    </a>
-                    {% else %}
-                    <a href="{% url 'accounts:subscription_plan' %}" class="list-group-item list-group-item-action">
-                        プレミアム会員になる
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- メインコンテンツ -->
-        <div class="col-md-9">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">
                     <h5>マイレビュー一覧 ({{ reviews|length }}件)</h5>
@@ -92,7 +56,6 @@
                                         <div class="btn-group btn-group-sm">
                                             <a href="{% url 'restaurants:detail' review.restaurant.pk %}" class="btn btn-primary btn-sm">店舗詳細</a>
                                             <a href="{% url 'restaurants:review_edit' review.pk %}" class="btn btn-outline-secondary btn-sm">編集</a>
-                                            <a href="{% url 'restaurants:review_delete' review.pk %}" class="btn btn-outline-danger btn-sm">削除</a>
                                         </div>
                                     </div>
                                 </div>
